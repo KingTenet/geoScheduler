@@ -24,7 +24,7 @@ import { db } from "@GeoScheduler/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: { headers: Headers }) => {
     return {
         db,
         ...opts,

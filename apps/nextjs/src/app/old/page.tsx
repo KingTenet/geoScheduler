@@ -1,24 +1,42 @@
-import Link from "next/link";
+// "use server";
 
-import { LatestPost } from "~/app/_components/geoScheduler";
+import { Suspense } from "react";
+
 import { api, HydrateClient } from "~/trpc/server";
+import {
+    CreatePostForm,
+    PostCardSkeleton,
+    PostList,
+} from "../_components/posts";
 
-export default async function Home() {
-    const hello = await api.post.hello({ text: "from tRPC" });
+export default function HomePage() {
+    // You can await this here if you don't want to show Suspense fallback below
+    void api.post2.all.prefetch();
 
-    void api.post.getLatest.prefetch();
+    // return <>Hello world</>;
 
     return (
         <HydrateClient>
-            <main>
-                <div>
-                    <div>
-                        <p>
-                            {hello ? hello.greeting : "Loading tRPC query..."}
-                        </p>
-                    </div>
+            <main className="container h-screen py-16">
+                <div className="flex flex-col items-center justify-center gap-4">
+                    <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
+                        Create <span className="text-primary">T3</span> Turbo
+                    </h1>
 
-                    <LatestPost />
+                    <CreatePostForm />
+                    <div className="w-full max-w-2xl overflow-y-scroll">
+                        <Suspense
+                            fallback={
+                                <div className="flex w-full flex-col gap-4">
+                                    <PostCardSkeleton />
+                                    <PostCardSkeleton />
+                                    <PostCardSkeleton />
+                                </div>
+                            }
+                        >
+                            <PostList />
+                        </Suspense>
+                    </div>
                 </div>
             </main>
         </HydrateClient>

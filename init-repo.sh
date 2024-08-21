@@ -22,7 +22,7 @@ fi
 
 ROOT_PROJECT_NAME=`jq -r .name package.json | sed 's/\/monorepo//g'`
 
-if [[ "$ROOT_PROJECT_NAME" != "@acme" ]]
+if [[ "$ROOT_PROJECT_NAME" != "@GeoScheduler" ]]
 then
     echo "Warning: this project has already been initialised, re-running this command may have unintended consequences.."
     echo "Continue? (y/n)"

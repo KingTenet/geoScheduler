@@ -17,6 +17,7 @@
     "@GeoScheduler/api": "workspace:*",
     "@GeoScheduler/db": "workspace:*",
     "@GeoScheduler/validators": "workspace:*",
+    "@GeoScheduler/ui": "workspace:*",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",

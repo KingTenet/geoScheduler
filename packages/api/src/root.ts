@@ -1,5 +1,5 @@
-import { postRouter } from "./routers/post";
 import { geoSchedulesRouter } from "./routers/geoSchedules";
+import { postRouter } from "./routers/post";
 import { createCallerFactory, createTRPCRouter } from "./trpc";
 
 /**
@@ -9,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "./trpc";
  */
 export const appRouter = createTRPCRouter({
     post: postRouter,
+    post2: geoSchedulesRouter,
     geoSchedules: geoSchedulesRouter,
 });
 

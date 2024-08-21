@@ -7,7 +7,7 @@ await import("./src/env.js");
 /** @type {import("next").NextConfig} */
 
 const config = {
-    transpilePackages: ["@acme/api"],
+    transpilePackages: ["@GeoScheduler/api"],
 };
 
 export default config;

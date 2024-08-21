@@ -1,5 +1,5 @@
 {
-  "name": "@acme/db",
+  "name": "@GeoScheduler/db",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -28,14 +28,14 @@
   },
   "devDependencies": {
     "prisma": "^5.14.0",
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
+    "@GeoScheduler/eslint-config": "workspace:*",
+    "@GeoScheduler/prettier-config": "workspace:*",
+    "@GeoScheduler/tsconfig": "workspace:*",
     "dotenv-cli": "^7.4.2",
     "drizzle-kit": "^0.24.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@GeoScheduler/prettier-config"
 }

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
-export const postRouter = createTRPCRouter({
+export const geoSchedulesRouter = createTRPCRouter({
     hello: publicProcedure
         .input(z.object({ text: z.string() }))
         .query(({ input }) => {

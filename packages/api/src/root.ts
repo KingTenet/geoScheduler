@@ -1,4 +1,5 @@
 import { postRouter } from "./routers/post";
+import { geoSchedulesRouter } from "./routers/geoSchedules";
 import { createCallerFactory, createTRPCRouter } from "./trpc";
 
 /**
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "./trpc";
  */
 export const appRouter = createTRPCRouter({
     post: postRouter,
+    geoSchedules: geoSchedulesRouter,
 });
 
 // export type definition of API

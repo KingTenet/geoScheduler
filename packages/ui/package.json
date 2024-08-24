@@ -39,8 +39,8 @@
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "catalog:",
     "@GeoScheduler/eslint-config": "workspace:*",
-    "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
     "@types/react": "catalog:react18",
     "eslint": "catalog:",
@@ -52,6 +52,5 @@
   "peerDependencies": {
     "react": "catalog:react18",
     "zod": "catalog:"
-  },
-  "prettier": "@GeoScheduler/prettier-config"
+  }
 }

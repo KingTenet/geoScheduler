@@ -10,6 +10,10 @@
     "plugins": [{ "name": "next" }],
     "module": "esnext"
   },
-  "include": [".", ".next/types/**/*.ts"],
+  "include": [
+    ".",
+    ".next/types/**/*.ts",
+    "../../packages/validators/src/examplePayloads.ts"
+  ],
   "exclude": ["node_modules"]
 }

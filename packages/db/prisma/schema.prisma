@@ -28,54 +28,55 @@ model Post2 {
 }
 
 model User {
-    id                   String                @id @default(uuid())
-    idpId                String
-    places               Place[]
-    blockScheduleConfigs BlockScheduleConfig[]
-    geometryCriteria     GeometryCriterium[]
-    ExternalBlocks       ExternalBlock[]
-
-    @@unique([idpId])
+    id                 String              @id
+    places             Place[]
+    geoScheduleConfigs GeoScheduleConfig[]
+    actionTemplate     ActionTemplate[]
 }
 
-model ExternalBlock {
-    id                    String               @id @default(uuid())
-    blockScheduleConfigId String?
-    blockScheduleConfig   BlockScheduleConfig? @relation(fields: [blockScheduleConfigId], references: [id])
-    user                  User                 @relation(fields: [userId], references: [id])
-    userId                String
+model AppsToBlock {
+    id   String @id @default(uuid())
+    apps App[]
+
+    actions   Actions? @relation(fields: [actionsId], references: [id])
+    actionsId String?
+
+    geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
+    geoScheduleConfigId String            @unique
 }
 
-model BlockScheduleConfig {
+model App {
+    id            String      @id @default(uuid())
+    appName       String
+    appsToBlock   AppsToBlock @relation(fields: [appsToBlockId], references: [id], onDelete: Cascade)
+    appsToBlockId String
+}
+
+model GeoScheduleConfig {
     id                 String                 @id @default(uuid())
-    externalBlocks     ExternalBlock[]
     geometryCriteria   GeometryCriterium[]
-    fromTime           DateTime?
-    toTime             DateTime?
+    fromTime           Int?
+    toTime             Int?
+    paused             Boolean
     updateDelayType    UpdateDelayType?
     updateDelaySeconds Int?
     createdDate        DateTime               @default(now())
     updatedDate        DateTime               @updatedAt
     deleteStartedDate  DateTime?
     deletionStatus     ScheduleDeletedStatus?
-    user               User                   @relation(fields: [userId], references: [id])
+    user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId             String
     dailyRecurrence    DailyRecurrence?
     weeklyRecurrence   WeeklyRecurrence?
-    Actions            Actions[]
-}
-
-model Apps {
-    id        String   @id @default(uuid())
-    Actions   Actions? @relation(fields: [actionsId], references: [id])
-    actionsId String?
+    actions            Actions[]
+    appsToBlock        AppsToBlock?
 }
 
 model Actions {
     id                    String                @id @default(uuid())
-    blockedApps           Apps[]
-    blockScheduleConfig   BlockScheduleConfig   @relation(fields: [blockScheduleConfigId], references: [id])
-    blockScheduleConfigId String
+    blockedApps           AppsToBlock[]
+    geoScheduleConfig     GeoScheduleConfig     @relation(fields: [geoScheduleConfigId], references: [id])
+    geoScheduleConfigId   String
     date                  DateTime
     actionType            ActionType
     deletionDateThreshold DateTime
@@ -86,6 +87,23 @@ model Actions {
     toDate                DateTime
     fromTime              DateTime
     toTime                DateTime
+}
+
+model ConfigurationOptions {
+    id               String          @id @default(uuid())
+    option           String
+    actionTemplate   ActionTemplate? @relation(fields: [actionTemplateId], references: [id], onDelete: Cascade)
+    actionTemplateId String?
+}
+
+model ActionTemplate {
+    id     String                 @id @default(uuid())
+    name   String
+    user   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+    config ConfigurationOptions[]
+
+    @@unique([userId, name])
 }
 
 enum ActionDeletionStatus {
@@ -107,18 +125,18 @@ enum ActionType {
 }
 
 model WeeklyRecurrence {
-    id                    String              @id @default(uuid())
-    fromDay               DayOfWeek?
-    toDay                 DayOfWeek?
-    blockScheduleConfig   BlockScheduleConfig @relation(fields: [blockScheduleConfigId], references: [id])
-    blockScheduleConfigId String              @unique
+    id                  String            @id @default(uuid())
+    fromDay             DayOfWeek?
+    toDay               DayOfWeek?
+    geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
+    geoScheduleConfigId String            @unique
 }
 
 model DailyRecurrence {
-    id                    String              @id @default(uuid())
-    repeatDays            DayOfWeek[]
-    blockScheduleConfigId String              @unique
-    blockScheduleConfig   BlockScheduleConfig @relation(fields: [blockScheduleConfigId], references: [id])
+    id                  String            @id @default(uuid())
+    repeatDays          DayOfWeek[]
+    geoScheduleConfigId String            @unique
+    geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
 }
 
 enum UpdateDelayType {
@@ -133,33 +151,33 @@ enum ScheduleDeletedStatus {
 }
 
 enum DayOfWeek {
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-    SATURDAY
-    SUNDAY
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+    Sunday
 }
 
 model GeometryCriterium {
-    id                    String              @id @default(uuid())
-    geometryBlockType     GeometryBlockType
-    place                 Place               @relation(fields: [placeId], references: [id])
-    placeId               String
-    blockScheduleConfig   BlockScheduleConfig @relation(fields: [blockScheduleConfigId], references: [id])
-    blockScheduleConfigId String
-    user                  User                @relation(fields: [userId], references: [id])
-    userId                String
+    id                  String            @id @default(uuid())
+    geometryBlockType   GeometryBlockType
+    place               Place             @relation(fields: [placeId], references: [id])
+    placeId             String
+    geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
+    geoScheduleConfigId String
 
-    @@unique([userId, placeId, geometryBlockType])
+    @@unique([placeId, geometryBlockType])
 }
 
 model Place {
     id               String              @id @default(uuid())
     name             String
     userId           String
-    user             User                @relation(fields: [userId], references: [id])
+    user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    latitude         Float
+    longitude        Float
     geometryCriteria GeometryCriterium[]
 
     @@unique([userId, name])

@@ -30,73 +30,47 @@ export const CreatePostSchema = createInsertSchema(Post, {
 });
 */
 
-export function CreatePostForm() {
-    const form = useForm({
-        schema: z.object({
-            content: z.string().max(256),
-            title: z.string().max(256),
-        }),
-        defaultValues: {
-            content: "",
-            title: "",
-        },
-    });
-
-    const utils = api.useUtils();
-    const createPost = api.post2.create.useMutation({
-        onSuccess: async () => {
-            form.reset();
-            await utils.post2.invalidate();
-        },
-        onError: (err) => {
-            toast.error(
-                err.data?.code === "UNAUTHORIZED"
-                    ? "You must be logged in to post"
-                    : "Failed to create post",
-            );
-        },
-    });
-
-    return (
-        <Form {...form}>
-            <form
-                className="flex w-full max-w-2xl flex-col gap-4"
-                onSubmit={form.handleSubmit((data) => {
-                    createPost.mutate(data);
-                })}
-            >
-                <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <Input {...field} placeholder="Title" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <Input {...field} placeholder="Content" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <Button>Create</Button>
-            </form>
-        </Form>
-    );
-}
+// export function CreatePostForm() {
+//     return (
+//         <Form {...form}>
+//             <form
+//                 className="flex w-full max-w-2xl flex-col gap-4"
+//                 onSubmit={form.handleSubmit((data) => {
+//                     createPost.mutate(data);
+//                 })}
+//             >
+//                 <FormField
+//                     control={form.control}
+//                     name="title"
+//                     render={({ field }) => (
+//                         <FormItem>
+//                             <FormControl>
+//                                 <Input {...field} placeholder="Title" />
+//                             </FormControl>
+//                             <FormMessage />
+//                         </FormItem>
+//                     )}
+//                 />
+//                 <FormField
+//                     control={form.control}
+//                     name="content"
+//                     render={({ field }) => (
+//                         <FormItem>
+//                             <FormControl>
+//                                 <Input {...field} placeholder="Content" />
+//                             </FormControl>
+//                             <FormMessage />
+//                         </FormItem>
+//                     )}
+//                 />
+//                 <Button>Create</Button>
+//             </form>
+//         </Form>
+//     );
+// }
 
 export function PostList() {
-    const [posts] = api.post2.all.useSuspenseQuery();
+    const [posts] = api.geoSchedules.all.useSuspenseQuery();
 
     if (posts.length === 0) {
         return (
@@ -124,12 +98,12 @@ export function PostList() {
 }
 
 export function PostCard(props: {
-    post: RouterOutputs["post"]["all"][number];
+    post: RouterOutputs["geoSchedules"]["byId"];
 }) {
     const utils = api.useUtils();
-    const deletePost = api.post2.delete.useMutation({
+    const deletePost = api.geoSchedules.delete.useMutation({
         onSuccess: async () => {
-            await utils.post2.invalidate();
+            await utils.geoSchedules.invalidate();
         },
         onError: (err) => {
             toast.error(
@@ -144,9 +118,9 @@ export function PostCard(props: {
         <div className="flex flex-row rounded-lg bg-muted p-4">
             <div className="flex-grow">
                 <h2 className="text-2xl font-bold text-primary">
-                    {props.post.title}
+                    {props.post.id}
                 </h2>
-                <p className="mt-2 text-sm">{props.post.content}</p>
+                <p className="mt-2 text-sm">{props.post.id}</p>
             </div>
             <div>
                 <Button

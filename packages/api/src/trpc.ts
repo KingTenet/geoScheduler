@@ -25,8 +25,21 @@ import { db } from "@GeoScheduler/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+    const userAuthIdpId = "Felix";
+
+    const user = await db.user.upsert({
+        where: {
+            id: userAuthIdpId,
+        },
+        update: {},
+        create: {
+            id: userAuthIdpId,
+        },
+    });
+
     return {
         db,
+        user,
         ...opts,
     };
 };

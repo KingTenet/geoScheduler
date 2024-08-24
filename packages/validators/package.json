@@ -13,10 +13,11 @@
   "scripts": {
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "tsc",
+    "dev": "tsc --watch",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "ts-jest"
   },
   "dependencies": {
     "zod": "catalog:"
@@ -25,8 +26,12 @@
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
     "eslint": "catalog:",
+    "jest": "^29.7.0",
     "prettier": "catalog:",
+    "ts-jest": "^29.2.4",
     "typescript": "catalog:"
   },
   "prettier": "@GeoScheduler/prettier-config"

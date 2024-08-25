@@ -4,14 +4,18 @@ import { Suspense } from "react";
 
 import { api, HydrateClient } from "~/trpc/server";
 import { DeleteUser } from "./_components/DeleteUser";
+import { EditGeoSchedule } from "./_components/EditGeoSchedule";
 import { CreateGeoSchedule } from "./_components/GeoSchedule";
 import { PostCardSkeleton, PostList } from "./_components/posts";
+// import Page from "./geoSchedule/[id]/page";
+import Page from "./examples/page";
 
 export default async function HomePage() {
     // You can await this here if you don't want to show Suspense fallback below
     void api.post2.all.prefetch();
     await Promise.resolve();
 
+    return <Page />;
     return (
         <HydrateClient>
             <main className="container h-screen py-16">

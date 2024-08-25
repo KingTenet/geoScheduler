@@ -2,9 +2,8 @@ import { z } from "zod";
 
 import type { Prisma } from "@GeoScheduler/db";
 import {
+    byIdGeoSchedulePayloadSchema,
     createGeoSchedulePayloadSchema,
-    createWithDailySchema,
-    createWithWeeklySchema,
 } from "@GeoScheduler/validators";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
@@ -55,6 +54,61 @@ type User = {
 // }
 
 export const geoSchedulesRouter = createTRPCRouter({
+    all: publicProcedure.query(({ ctx }) => {
+        return ctx.db.geoScheduleConfig.findMany({
+            include: {
+                appsToBlock: {
+                    include: {
+                        apps: true,
+                    },
+                },
+                geometryCriteria: {
+                    include: {
+                        place: true,
+                    },
+                },
+                dailyRecurrence: true,
+                weeklyRecurrence: true,
+            },
+        });
+    }),
+
+    getLatest: publicProcedure.query(async ({ ctx }) => {
+        const post = await ctx.db.geoScheduleConfig.findFirst({
+            orderBy: { createdDate: "desc" },
+        });
+
+        return post ?? null;
+    }),
+
+    byId: publicProcedure
+        .input(byIdGeoSchedulePayloadSchema)
+        .query(async ({ ctx, input }) => {
+            const geoSchedule = await ctx.db.geoScheduleConfig.findFirst({
+                where: input,
+                include: {
+                    appsToBlock: {
+                        include: {
+                            apps: true,
+                        },
+                    },
+                    geometryCriteria: {
+                        include: {
+                            place: true,
+                        },
+                    },
+                    dailyRecurrence: true,
+                    weeklyRecurrence: true,
+                },
+            });
+
+            return geoSchedule ?? null;
+        }),
+
+    delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
+        return ctx.db.geoScheduleConfig.delete({ where: { id: input } });
+    }),
+
     create: publicProcedure
         .input(createGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
@@ -131,69 +185,4 @@ export const geoSchedulesRouter = createTRPCRouter({
                 },
             });
         }),
-
-    all: publicProcedure.query(({ ctx }) => {
-        return ctx.db.geoScheduleConfig.findMany({
-            include: {
-                appsToBlock: {
-                    include: {
-                        apps: true,
-                    },
-                },
-                geometryCriteria: {
-                    include: {
-                        place: true,
-                    },
-                },
-                dailyRecurrence: true,
-                weeklyRecurrence: true,
-            },
-        });
-    }),
-
-    hello: publicProcedure
-        .input(z.object({ text: z.string() }))
-        .query(({ input }) => {
-            return {
-                greeting: `Hello ${input.text}`,
-            };
-        }),
-
-    getLatest: publicProcedure.query(async ({ ctx }) => {
-        const post = await ctx.db.post2.findFirst({
-            orderBy: { createdAt: "desc" },
-        });
-
-        return post ?? null;
-    }),
-
-    byId: publicProcedure
-        .input(z.object({ id: z.string() }))
-        .query(({ ctx, input }) => {
-            return ctx.db.geoScheduleConfig.findFirst({
-                where: { id: input.id },
-                include: {
-                    appsToBlock: {
-                        include: {
-                            apps: true,
-                        },
-                    },
-                    geometryCriteria: {
-                        include: {
-                            place: true,
-                        },
-                    },
-                    dailyRecurrence: true,
-                    weeklyRecurrence: true,
-                },
-            });
-
-            // return ctx.db.query.Post.findFirst({
-            //     where: eq(Post.id, input.id),
-            // });
-        }),
-
-    delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
-        return ctx.db.geoScheduleConfig.delete({ where: { id: input } });
-    }),
 });

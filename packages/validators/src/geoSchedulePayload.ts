@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { appsPayload } from "./appsPayload";
-
 const daysOfWeekSchema = z.enum([
     "Monday",
     "Tuesday",
@@ -40,7 +38,7 @@ const repeatingWeeklySchema = z.object({
 });
 
 const createGeoScheduleBasePayloadSchema = z.object({
-    blocks: z.array(appsPayload),
+    blocks: z.array(z.string()),
     untilLocation: placeSchema,
     repeatingTime: timeRangeSchema,
 });
@@ -64,18 +62,12 @@ const createGeoSchedulePayloadSchema = z.discriminatedUnion("repeatingType", [
     createWithDailySchema.required().strict(),
 ]);
 
-// const createPartialGeoSchedulePayloadSchema = z.discriminatedUnion(
-//     "repeatingType",
-//     [
-//         createWithWeeklySchema.partial().required({ repeatingType: true }).strict(),
-//         createWithDailySchema.partial().required({ repeatingType: true }).strict(),
-//     ],
-// );
-
 const createPartialGeoSchedulePayloadSchema = z.union([
     createWithWeeklySchema.partial().strict(),
     createWithDailySchema.partial().strict(),
 ]);
+
+const byIdGeoSchedulePayloadSchema = z.object({ id: z.string() }).strict();
 
 export {
     createGeoSchedulePayloadSchema,
@@ -83,4 +75,5 @@ export {
     createWithWeeklySchema,
     createGeoScheduleBasePayloadSchema,
     createPartialGeoSchedulePayloadSchema,
+    byIdGeoSchedulePayloadSchema,
 };

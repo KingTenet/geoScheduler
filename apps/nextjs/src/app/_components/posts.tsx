@@ -1,73 +1,11 @@
 "use client";
 
-import { z } from "zod";
-
 import type { RouterOutputs } from "@GeoScheduler/api";
-// import { CreatePostSchema } from "@GeoScheduler/db/schema";
 import { cn } from "@GeoScheduler/ui";
 import { Button } from "@GeoScheduler/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
-    useForm,
-} from "@GeoScheduler/ui/form";
-import { Input } from "@GeoScheduler/ui/input";
 import { toast } from "@GeoScheduler/ui/toast";
 
 import { api } from "~/trpc/react";
-
-/*
-export const CreatePostSchema = createInsertSchema(Post, {
-  title: z.string().max(256),
-  content: z.string().max(256),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-*/
-
-// export function CreatePostForm() {
-//     return (
-//         <Form {...form}>
-//             <form
-//                 className="flex w-full max-w-2xl flex-col gap-4"
-//                 onSubmit={form.handleSubmit((data) => {
-//                     createPost.mutate(data);
-//                 })}
-//             >
-//                 <FormField
-//                     control={form.control}
-//                     name="title"
-//                     render={({ field }) => (
-//                         <FormItem>
-//                             <FormControl>
-//                                 <Input {...field} placeholder="Title" />
-//                             </FormControl>
-//                             <FormMessage />
-//                         </FormItem>
-//                     )}
-//                 />
-//                 <FormField
-//                     control={form.control}
-//                     name="content"
-//                     render={({ field }) => (
-//                         <FormItem>
-//                             <FormControl>
-//                                 <Input {...field} placeholder="Content" />
-//                             </FormControl>
-//                             <FormMessage />
-//                         </FormItem>
-//                     )}
-//                 />
-//                 <Button>Create</Button>
-//             </form>
-//         </Form>
-//     );
-// }
 
 export function PostList() {
     const [posts] = api.geoSchedules.all.useSuspenseQuery();

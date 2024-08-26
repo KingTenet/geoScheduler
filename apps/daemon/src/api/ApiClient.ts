@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import type { OAuth } from "./tokens";
+import type { OAuth } from "../auth/tokens";
 
 export default class ApiClient {
     apiBaseUrl: string;

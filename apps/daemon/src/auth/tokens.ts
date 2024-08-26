@@ -1,6 +1,6 @@
 import fs from "fs";
+import type { BaseClient, errors, Issuer, TokenSet } from "openid-client";
 import open from "open";
-import { BaseClient, errors, Issuer, TokenSet } from "openid-client";
 import prompts from "prompts";
 
 export class OAuthInternalError extends Error {}
@@ -39,42 +39,52 @@ export class OAuth {
             );
         }
 
-        this.handleTokenRefresh();
+        this.periodicallyRefresh().catch((err) => {
+            console.log("Periodic refresh has failed");
+            if (err instanceof Error) {
+                console.error(err);
+            }
+            throw new OAuthInternalError("Periodic refresh failed");
+        });
     }
 
-    async handleTokenRefresh() {
+    async periodicallyRefresh() {
+        await promiseSleep(REFRESH_TOKEN_INTERVAL_MS);
+        try {
+            await this.refreshTokens();
+        } catch (err) {
+            console.error(err);
+            console.error("Token refresh has failed");
+        }
+
+        await this.periodicallyRefresh();
+    }
+
+    async refreshTokens(): Promise<void> {
         if (!this.tokens) {
             throw new OAuthInternalError("OAuth was not initialized");
         }
 
-        if (!this.tokens?.refresh_token) {
+        if (!this.tokens.refresh_token) {
             throw new OAuthRefreshError("OAuth missing refresh token");
         }
 
-        if (!this.tokens?.expires_at) {
+        if (!this.tokens.expires_at) {
             throw new OAuthRefreshError(
                 "OAuth tokens missing expires_at timestamp",
             );
         }
 
         const expiresAt = new Date(1000 * this.tokens.expires_at);
-        console.log("Token expires at " + expiresAt);
+        console.log(`Token expires at ${expiresAt.toString()}`);
         const refreshAtDate =
             expiresAt.getTime() - REFRESH_TOKEN_INTERVAL_MS / 2;
-        console.log("Refresh at " + new Date(refreshAtDate));
+        console.log(`Refresh at ${new Date(refreshAtDate).toString()}`);
 
-        if (Date.now() > refreshAtDate) {
-            await this.refreshTokens();
-        }
-
-        await promiseSleep(REFRESH_TOKEN_INTERVAL_MS);
-        await this.handleTokenRefresh();
-    }
-
-    async refreshTokens(): Promise<void> {
-        if (!this.tokens?.refresh_token) {
+        if (Date.now() < refreshAtDate) {
             return;
         }
+
         console.log("Refreshing oAuth tokens");
         const newTokens = await this.client.refresh(this.tokens.refresh_token);
         this.tokens = OAuth.writeTokensToStore(
@@ -101,31 +111,31 @@ export class OAuth {
             message: `Press any key to open up the browser to login or press ctrl-c to abort. You should see the following code: ${user_code}. It expires in ${expires_in % 60 === 0 ? `${expires_in / 60} minutes` : `${expires_in} seconds`}.`,
         });
         // opens the verification_uri_complete URL using the system-register handler for web links (browser)
-        open(verification_uri_complete);
+        await open(verification_uri_complete);
 
         try {
             return await handle.poll();
         } catch (err) {
-            if (!err || typeof err !== "object" || !("error" in err)) {
+            if (!(err && typeof err === "object" && "error" in err)) {
                 throw new OAuthDeviceAuthError("Unknown error occurred");
             }
+
             switch (err.error) {
-                case "access_denied": // end-user declined the device confirmation prompt, consent or rules failed
-                    console.error("\n\ncancelled interaction");
-                    break;
-                case "expired_token": // end-user did not complete the interaction in time
-                    console.error("\n\ndevice flow expired");
-                    break;
+                case "access_denied":
+                    throw new OAuthDeviceAuthError(
+                        "User cancelled interaction",
+                    );
+                case "expired_token":
+                    throw new OAuthDeviceAuthError("Device flow expired");
                 default:
                     if (err instanceof errors.OPError) {
-                        console.error(
-                            `\n\nerror = ${err.error}; error_description = ${err.error_description}`,
+                        throw new OAuthDeviceAuthError(
+                            `Error = ${err.error}; error_description = ${err.error_description}`,
                         );
-                    } else {
-                        throw err;
                     }
             }
-            throw new OAuthDeviceAuthError();
+
+            throw new OAuthDeviceAuthError("Unknown error occurred");
         }
     }
 
@@ -141,7 +151,8 @@ export class OAuth {
         }
         const tokensJSON = fs.readFileSync(TOKENS_FILE_PATH, "utf-8");
         if (tokensJSON) {
-            return new TokenSet(JSON.parse(tokensJSON));
+            const tokenSet = JSON.parse(tokensJSON) as TokenSet;
+            return new TokenSet(tokenSet);
         }
     }
 

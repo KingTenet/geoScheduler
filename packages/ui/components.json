@@ -5,13 +5,13 @@
   "tsx": true,
   "tailwind": {
     "config": "./tailwind.config.ts",
-    "css": "unused.css",
+    "css": "src/app/globals.css",
     "baseColor": "zinc",
-    "cssVariables": true
+    "cssVariables": true,
+    "prefix": ""
   },
   "aliases": {
     "utils": "@GeoScheduler/ui",
-    "components": "src/",
-    "ui": "src/"
+    "components": "src/"
   }
 }

@@ -36,46 +36,41 @@ TaskGeo consists of three main components:
 - **Offline Support**: The daemon caches up to one week of schedules for offline operation.
 - **Data Privacy**: Location data is not stored long-term; only temporary geotrigger states are maintained.
 
+## Tech Stack
+
+- NextJS for web frontend and API routes
+- tRPC for end-to-end typesafe APIs
+- Prisma as the ORM for database operations
+- TypeScript for type-safe development
+- Tailwind CSS and Radix UI for styling and components
+- esbuild for compiling the daemon application
+
+## Current Implementation Status
+
+- Basic web UI implemented for creating and managing geo-schedules
+- tRPC API routes set up for CRUD operations on schedules and user data
+- Prisma database schema defined with models for User, GeoScheduleConfig, AppsToBlock, etc.
+- Initial structure for MacOS daemon with OAuth setup
+- Basic authentication system in place
+
+## Next Steps
+
+1. Complete the MacOS daemon implementation
+2. Enhance the web UI for a more user-friendly experience
+3. Implement offline functionality for both daemon and web app
+4. Finalize authentication and security measures
+5. Implement the managed script library feature
+6. Add comprehensive error handling and logging
+7. Develop unit and integration tests
+
 ## Getting Started
 
-(Instructions for installation and initial setup would go here)
-
-## Usage
-
-(Basic usage instructions and examples would go here)
-
-## Security
-
-TaskGeo prioritizes security through:
-
-- End-to-end user authentication
-- Restricted script execution from a managed library
-- Secure communication between components
-
-## Limitations
-
-- Currently supports only circular geofences
-- Limited to MacOS for task execution
-- Requires GMT for all time-based scheduling
-
-## Future Enhancements
-
-While not part of the current MVP, future versions may include:
-
-- Enhanced error handling and reporting
-- Audit trails for task executions
-- Performance optimizations for simultaneous task execution
-- Extended geofencing shapes
-- Integration with third-party services
-
-## Contributing
-
-(Information about how to contribute to the project would go here)
+(Instructions for setting up the development environment, running the application, and contributing to the project will be added here.)
 
 ## License
 
-(License information would go here)
+(License information will be added here.)
 
 ## Contact
 
-(Contact information or links would go here)
+(Contact information or links will be added here.)

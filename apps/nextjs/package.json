@@ -37,7 +37,7 @@
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
-    "@types/node": "^20.14.15",
+    "@types/node": "catalog:",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
     "dotenv-cli": "^7.4.2",

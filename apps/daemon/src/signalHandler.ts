@@ -1,4 +1,4 @@
-export default function () {
+export default function (): Promise<void> {
     return new Promise<void>((resolve) => {
         process.on("SIGTERM", function onSigterm() {
             console.info(

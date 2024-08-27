@@ -21,6 +21,7 @@ const REQUIRED_VARS = [
     "AUTH0_DOMAIN",
     "AUTH0_AUDIENCE",
     "AUTH0_CLIENT_ID",
+    "TOKENS_FILE_PATH",
 ] as const;
 
 type RequiredKey = (typeof REQUIRED_VARS)[number];

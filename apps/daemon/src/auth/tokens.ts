@@ -1,12 +1,12 @@
 import fs from "fs";
-import type { BaseClient, errors, Issuer, TokenSet } from "openid-client";
+import type { BaseClient, TokenSet as TokenSetType } from "openid-client";
 import open from "open";
+import { errors, Issuer, TokenSet } from "openid-client";
 import prompts from "prompts";
 
 export class OAuthInternalError extends Error {}
 export class OAuthDeviceAuthError extends Error {}
 export class OAuthRefreshError extends Error {}
-const TOKENS_FILE_PATH = ".tokens";
 
 const REFRESH_TOKEN_INTERVAL_MS = 1000 * 3600; // Refresh tokens every hour
 const promiseSleep = (interval: number) =>
@@ -17,28 +17,31 @@ export class OAuth {
     oAuthAudience: string;
     oAuthClientId: string;
     client: BaseClient;
-    tokens?: TokenSet;
+    tokens?: TokenSetType;
+    tokensFilePath: string;
 
     constructor(
         oAuthDomain: string,
         oAuthAudience: string,
         oAuthClientId: string,
         client: BaseClient,
+        tokensFilePath: string,
     ) {
         this.oAuthDomain = oAuthDomain;
         this.oAuthAudience = oAuthAudience;
         this.oAuthClientId = oAuthClientId;
         this.client = client;
+        this.tokensFilePath = tokensFilePath;
     }
 
     async init() {
-        this.tokens = OAuth.getTokensFromStore();
+        this.tokens = OAuth.getTokensFromStore(this.tokensFilePath);
         if (!this.tokens) {
             this.tokens = OAuth.writeTokensToStore(
+                this.tokensFilePath,
                 await this.authorizeDevice(),
             );
         }
-
         this.periodicallyRefresh().catch((err) => {
             console.log("Periodic refresh has failed");
             if (err instanceof Error) {
@@ -88,6 +91,7 @@ export class OAuth {
         console.log("Refreshing oAuth tokens");
         const newTokens = await this.client.refresh(this.tokens.refresh_token);
         this.tokens = OAuth.writeTokensToStore(
+            this.tokensFilePath,
             new TokenSet({
                 ...this.tokens,
                 ...newTokens,
@@ -111,7 +115,7 @@ export class OAuth {
             message: `Press any key to open up the browser to login or press ctrl-c to abort. You should see the following code: ${user_code}. It expires in ${expires_in % 60 === 0 ? `${expires_in / 60} minutes` : `${expires_in} seconds`}.`,
         });
         // opens the verification_uri_complete URL using the system-register handler for web links (browser)
-        await open(verification_uri_complete);
+        open(verification_uri_complete);
 
         try {
             return await handle.poll();
@@ -139,19 +143,21 @@ export class OAuth {
         }
     }
 
-    static writeTokensToStore(tokens: TokenSet) {
+    static writeTokensToStore(tokensFilePath: string, tokens: TokenSetType) {
         console.log("Writing new tokens to store");
-        fs.writeFileSync(TOKENS_FILE_PATH, JSON.stringify(tokens), "utf-8");
-        return OAuth.getTokensFromStore();
+        fs.writeFileSync(tokensFilePath, JSON.stringify(tokens), "utf-8");
+        return OAuth.getTokensFromStore(tokensFilePath);
     }
 
-    static getTokensFromStore(): TokenSet | undefined {
-        if (!fs.existsSync(TOKENS_FILE_PATH)) {
+    static getTokensFromStore(
+        tokensFilePath: string,
+    ): TokenSetType | undefined {
+        if (!fs.existsSync(tokensFilePath)) {
             return;
         }
-        const tokensJSON = fs.readFileSync(TOKENS_FILE_PATH, "utf-8");
+        const tokensJSON = fs.readFileSync(tokensFilePath, "utf-8");
         if (tokensJSON) {
-            const tokenSet = JSON.parse(tokensJSON) as TokenSet;
+            const tokenSet = JSON.parse(tokensJSON) as TokenSetType;
             return new TokenSet(tokenSet);
         }
     }
@@ -160,6 +166,7 @@ export class OAuth {
         oAuthDomain: string,
         oAuthAudience: string,
         oAuthClientId: string,
+        tokensFilePath: string,
     ) {
         const issuer = await Issuer.discover(`https://${oAuthDomain}`);
 
@@ -174,14 +181,22 @@ export class OAuth {
             oAuthAudience,
             oAuthClientId,
             client,
+            tokensFilePath,
         );
         await oAuth.init();
         return oAuth;
     }
 
-    getAccessToken() {
+    async getAccessToken() {
         if (!this.tokens?.access_token) {
             throw new OAuthInternalError("No access token found");
+        }
+        // Check if token is expired and refresh if necessary
+        if (
+            this.tokens.expires_at &&
+            this.tokens.expires_at < Date.now() / 1000
+        ) {
+            await this.refreshTokens();
         }
         return this.tokens.access_token;
     }

@@ -1,14 +1,25 @@
+// src/index.ts
+import ApiClient from "./api/ApiClient";
+import { OAuth } from "./auth/tokens";
 import initEnv from "./initEnv";
-import startServices from "./Services";
-import signalHandler from "./signalHandler";
 
 async function main() {
+    console.log("Started");
     const env = initEnv();
-    const promiseShutdown = signalHandler();
-    startServices(env, promiseShutdown);
+    const auth = await OAuth.create(
+        env.AUTH0_DOMAIN,
+        env.AUTH0_AUDIENCE,
+        env.AUTH0_CLIENT_ID,
+        env.TOKENS_FILE_PATH,
+    );
+
+    try {
+        const apiClient = new ApiClient(env.API_BASE_URL, auth);
+        const geoScheduleById = await apiClient.getGeoScheduleById("abc");
+        console.log(geoScheduleById);
+    } catch (error) {
+        console.error("Error:", error);
+    }
 }
 
-main().then(
-    () => console.log("Shutdown gracefully"),
-    (err) => console.log("Shutdown with error: " + err),
-);
+main().catch(console.error);

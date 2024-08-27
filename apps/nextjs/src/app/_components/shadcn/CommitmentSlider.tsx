@@ -7,7 +7,7 @@ interface CommitmentPeriodProps {
     onSetCommitmentPeriod: (days: number) => void;
 }
 
-export function CommitmentPeriod({
+export default function CommitmentSlider({
     commitmentPeriod,
     onSetCommitmentPeriod,
 }: CommitmentPeriodProps) {

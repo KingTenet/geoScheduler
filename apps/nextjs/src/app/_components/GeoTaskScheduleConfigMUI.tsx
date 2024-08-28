@@ -1,28 +1,32 @@
 "use client";
 
-// ~/apps/nextjs/src/app/_components/GeoTaskScheduleConfigMUI.tsx
 import { useState } from "react";
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    FormControl,
-    FormControlLabel,
-    InputLabel,
-    MenuItem,
-    Radio,
-    RadioGroup,
-    Select,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 
 import CommitmentSlider from "./CommitmentSlider";
 import TimeSelector from "./TimeSelector";
 
-export function GeoTaskScheduleConfigMUI({ clearState }) {
-    const [selectedTask, setSelectedTask] = useState("");
+export function GeoTaskScheduleConfigMUI({
+    clearState,
+    taskOptions = ["Facebook", "Instagram", "Chrome", "VSCode", "Youtube"],
+}: {
+    clearState: () => void;
+    taskOptions: string[];
+}) {
+
+
+
+
+
+
+
+
+
+
+    
+    const [selectedTasks, setSelectedTasks] = useState<Record<string, boolean>>(
+        {},
+    );
     const [selectStartTimeButtonClicked, updateSelectStartTimeButtonClicked] =
         useState(false);
     const [startTime, setStartTime] = useState<number | undefined>();
@@ -33,7 +37,12 @@ export function GeoTaskScheduleConfigMUI({ clearState }) {
     const [endLocation, setEndLocation] = useState("");
     const [commitmentPeriod, setCommitmentPeriod] = useState();
 
-    const tasks = ["Work", "Study", "Exercise", "Meditation", "Custom"];
+    const toggleTask = (task: string) => {
+        setSelectedTasks((prev) => ({
+            ...prev,
+            [task]: !prev[task],
+        }));
+    };
 
     return (
         <Box
@@ -41,7 +50,7 @@ export function GeoTaskScheduleConfigMUI({ clearState }) {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "top",
-                minHeight: "100vh",
+                minHeight: "90vh",
                 bgcolor: "background.default",
             }}
         >
@@ -65,39 +74,45 @@ export function GeoTaskScheduleConfigMUI({ clearState }) {
                             gap: 4,
                         }}
                     >
-                        <FormControl fullWidth>
-                            <InputLabel id="task-select-label">
-                                Select a task
-                            </InputLabel>
-                            <Select
-                                labelId="task-select-label"
-                                value={selectedTask}
-                                label="Select a task"
-                                onChange={(e) =>
-                                    setSelectedTask(e.target.value)
-                                }
-                            >
-                                {tasks.map((task) => (
-                                    <MenuItem key={task} value={task}>
-                                        {task}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: 2,
+                                mb: 4,
+                            }}
+                        >
+                            {taskOptions.map((task) => (
+                                <Button
+                                    key={task}
+                                    variant={
+                                        selectedTasks[task]
+                                            ? "contained"
+                                            : "outlined"
+                                    }
+                                    onClick={() => toggleTask(task)}
+                                    sx={{ minWidth: "100px" }}
+                                >
+                                    {task}
+                                </Button>
+                            ))}
+                        </Box>
 
-                        {Boolean(selectedTask) && startTime === undefined && (
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                onClick={() =>
-                                    updateSelectStartTimeButtonClicked(true)
-                                }
-                                sx={{ mt: 2 }}
-                            >
-                                Set a start time for the task..
-                            </Button>
-                        )}
+                        {Object.values(selectedTasks).some(Boolean) &&
+                            startTime === undefined && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    fullWidth
+                                    onClick={() =>
+                                        updateSelectStartTimeButtonClicked(true)
+                                    }
+                                    sx={{ mt: 2 }}
+                                >
+                                    Set a start time for the task..
+                                </Button>
+                            )}
                         {Boolean(selectStartTimeButtonClicked) && (
                             <TimeSelector
                                 timeTitle="Start Time"
@@ -119,7 +134,7 @@ export function GeoTaskScheduleConfigMUI({ clearState }) {
                                     fullWidth
                                     onClick={() => setEndTrigger("location")}
                                 >
-                                    A location event?
+                                    You go somewhere?
                                 </Button>
 
                                 <Typography variant="h5" color="text.secondary">

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { GeoTaskScheduleConfigMUI } from "../_components/mui/GeoTaskScheduleConfigMUI";
-import TimeSelector from "../_components/mui/TimeSelector";
+import { GeoTaskScheduleConfigMUI } from "../_components/GeoTaskScheduleConfigMUI";
+import TimeSelector from "../_components/TimeSelector";
 
 function WrappedSchedule() {
     const [count, updateCount] = useState(0);

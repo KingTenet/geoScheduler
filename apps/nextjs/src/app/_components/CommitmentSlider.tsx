@@ -17,7 +17,7 @@ import {
     UnicornEmoji,
     WeightLifterEmoji,
     YawnEmoji,
-} from "../Emojis";
+} from "./Emojis";
 
 const Input = styled(MuiInput)`
     width: 42px;
@@ -189,13 +189,7 @@ export default function InputSlider() {
                 marginRight: "35px",
             }}
         >
-            <Typography id="input-slider" gutterBottom>
-                <span>How long can you commit? </span>
-            </Typography>
             <Grid container spacing={4} sx={{ alignItems: "center" }}>
-                <Grid item>
-                    <YawnEmoji style={{ fontSize: "xx-large" }} />
-                </Grid>
                 <Grid item xs>
                     <Box sx={{ display: "flex" }}>
                         <Slider

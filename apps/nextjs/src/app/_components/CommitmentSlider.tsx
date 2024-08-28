@@ -170,12 +170,17 @@ const valueLabelFormat = (
     return [getLabel(sliderValueConfig), sliderValueConfig.emoji];
 };
 
-export default function InputSlider() {
+interface CommitmentSliderProps {
+    onChange: (value: number) => void;
+}
+
+export default function CommitmentSlider({ onChange }: CommitmentSliderProps) {
     const [value, setValue] = React.useState<number>(0);
 
     const handleChange = (event: Event, newValue: number | number[]) => {
         if (typeof newValue === "number") {
             setValue(newValue);
+            onChange(newValue);
         }
     };
 
@@ -197,8 +202,6 @@ export default function InputSlider() {
                             min={0}
                             step={1}
                             max={SLIDER_VALUES.length - 1}
-                            // getAriaValueText={valueLabelFormat}
-                            // valueLabelFormat={valueLabelFormat}
                             onChange={handleChange}
                             valueLabelDisplay="off"
                             aria-labelledby="non-linear-slider"

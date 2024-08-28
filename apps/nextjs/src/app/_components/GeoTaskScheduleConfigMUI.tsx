@@ -1,48 +1,56 @@
-"use client";
-
-import { useState } from "react";
+import React, { useReducer } from "react";
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 
 import CommitmentSlider from "./CommitmentSlider";
+import { EndTriggerSelector } from "./EndTriggerSelector";
+import { geoTaskScheduleReducer, initialState } from "./geoTaskScheduleReducer";
+import { TaskSelector } from "./TaskSelector";
 import TimeSelector from "./TimeSelector";
+
+interface GeoTaskScheduleConfigMUIProps {
+    clearState: () => void;
+    taskOptions?: string[];
+}
+
+const ToggleNextActionButton = ({
+    label,
+    showButton,
+    showChildren,
+    children,
+}: {
+    showButton: Boolean;
+    showChildren: (clicked: Boolean) => Boolean;
+    label: string;
+    children: React.ReactNode;
+}) => {
+    const [clicked, updateClicked] = React.useState(false);
+
+    if (showChildren(clicked)) {
+        return <>{children}</>;
+    }
+
+    if (!showButton) {
+        return <></>;
+    }
+
+    return (
+        <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={() => updateClicked(true)}
+            sx={{ mt: 2 }}
+        >
+            {label}
+        </Button>
+    );
+};
 
 export function GeoTaskScheduleConfigMUI({
     clearState,
     taskOptions = ["Facebook", "Instagram", "Chrome", "VSCode", "Youtube"],
-}: {
-    clearState: () => void;
-    taskOptions: string[];
-}) {
-
-
-
-
-
-
-
-
-
-
-    
-    const [selectedTasks, setSelectedTasks] = useState<Record<string, boolean>>(
-        {},
-    );
-    const [selectStartTimeButtonClicked, updateSelectStartTimeButtonClicked] =
-        useState(false);
-    const [startTime, setStartTime] = useState<number | undefined>();
-    const [endTrigger, setEndTrigger] = useState<
-        "time" | "location" | undefined
-    >();
-    const [endTime, setEndTime] = useState<number | undefined>();
-    const [endLocation, setEndLocation] = useState("");
-    const [commitmentPeriod, setCommitmentPeriod] = useState();
-
-    const toggleTask = (task: string) => {
-        setSelectedTasks((prev) => ({
-            ...prev,
-            [task]: !prev[task],
-        }));
-    };
+}: GeoTaskScheduleConfigMUIProps) {
+    const [state, dispatch] = useReducer(geoTaskScheduleReducer, initialState);
 
     return (
         <Box
@@ -74,115 +82,62 @@ export function GeoTaskScheduleConfigMUI({
                             gap: 4,
                         }}
                     >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                flexWrap: "wrap",
-                                gap: 2,
-                                mb: 4,
-                            }}
-                        >
-                            {taskOptions.map((task) => (
-                                <Button
-                                    key={task}
-                                    variant={
-                                        selectedTasks[task]
-                                            ? "contained"
-                                            : "outlined"
-                                    }
-                                    onClick={() => toggleTask(task)}
-                                    sx={{ minWidth: "100px" }}
-                                >
-                                    {task}
-                                </Button>
-                            ))}
-                        </Box>
+                        <TaskSelector
+                            taskOptions={taskOptions}
+                            selectedTasks={state.selectedTasks}
+                            onToggleTask={(task) =>
+                                dispatch({ type: "TOGGLE_TASK", task })
+                            }
+                        />
 
-                        {Object.values(selectedTasks).some(Boolean) &&
-                            startTime === undefined && (
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    onClick={() =>
-                                        updateSelectStartTimeButtonClicked(true)
-                                    }
-                                    sx={{ mt: 2 }}
-                                >
-                                    Set a start time for the task..
-                                </Button>
-                            )}
-                        {Boolean(selectStartTimeButtonClicked) && (
+                        <ToggleNextActionButton
+                            label={"Set a start time for the task.."}
+                            showButton={
+                                Object.values(state.selectedTasks).some(
+                                    Boolean,
+                                ) && state.startTime === undefined
+                            }
+                            showChildren={(clicked) =>
+                                clicked || state.startTime !== undefined
+                            }
+                        >
+                            <Typography variant="body1" color="text.secondary">
+                                Start the task from...
+                            </Typography>
                             <TimeSelector
                                 timeTitle="Start Time"
-                                dispatchTime={(time) => setStartTime(time)}
+                                dispatchTime={(time) =>
+                                    dispatch({
+                                        type: "SET_START_TIME",
+                                        time,
+                                    })
+                                }
+                            />
+                        </ToggleNextActionButton>
+
+                        {state.startTime !== undefined && (
+                            <EndTriggerSelector
+                                endTrigger={state.endTrigger}
+                                onSetEndTrigger={(trigger) =>
+                                    dispatch({
+                                        type: "SET_END_TRIGGER",
+                                        trigger,
+                                    })
+                                }
+                                onSetEndTime={(time) =>
+                                    dispatch({ type: "SET_END_TIME", time })
+                                }
+                                onSetEndLocation={(location) =>
+                                    dispatch({
+                                        type: "SET_END_LOCATION",
+                                        location,
+                                    })
+                                }
+                                endLocation={state.endLocation || ""}
                             />
                         )}
-                        {Boolean(startTime) && !Boolean(endTrigger) && (
-                            <>
-                                <Typography
-                                    variant="body1"
-                                    color="text.secondary"
-                                >
-                                    Continue running the task until...
-                                </Typography>
 
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    onClick={() => setEndTrigger("location")}
-                                >
-                                    You go somewhere?
-                                </Button>
-
-                                <Typography variant="h5" color="text.secondary">
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        Or
-                                    </Box>
-                                </Typography>
-
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
-                                    onClick={() => setEndTrigger("time")}
-                                >
-                                    A later time?
-                                </Button>
-                            </>
-                        )}
-                        {Boolean(endTrigger) && (
-                            <Box>
-                                {endTrigger === "time" ? (
-                                    <TimeSelector
-                                        timeTitle="End Time"
-                                        dispatchTime={(time) =>
-                                            setEndTime(time)
-                                        }
-                                    />
-                                ) : (
-                                    <TextField
-                                        label="End Location"
-                                        value={endLocation}
-                                        onChange={(e) =>
-                                            setEndLocation(e.target.value)
-                                        }
-                                        fullWidth
-                                        sx={{ mt: 2 }}
-                                    />
-                                )}
-                            </Box>
-                        )}
-
-                        {(endTime || endLocation) && (
+                        {(state.endTime || state.endLocation) && (
                             <>
                                 <Box
                                     sx={{
@@ -191,21 +146,27 @@ export function GeoTaskScheduleConfigMUI({
                                         alignItems: "center",
                                     }}
                                 >
-                                    <>
-                                        <Typography
-                                            variant="h5"
-                                            color="text.secondary"
-                                        >
-                                            {"Can you commit?"}
-                                        </Typography>
-                                    </>
+                                    <Typography
+                                        variant="h5"
+                                        color="text.secondary"
+                                    >
+                                        Can you commit?
+                                    </Typography>
                                 </Box>
 
-                                <CommitmentSlider />
+                                <CommitmentSlider
+                                    onChange={(period) =>
+                                        dispatch({
+                                            type: "SET_COMMITMENT_PERIOD",
+                                            period,
+                                        })
+                                    }
+                                />
                             </>
                         )}
 
-                        {commitmentPeriod > 0 && (
+                        <Box sx={{ flexGrow: 1 }} />
+                        {(state.endTime || state.endLocation) && (
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -218,18 +179,18 @@ export function GeoTaskScheduleConfigMUI({
                                 Submit Schedule
                             </Button>
                         )}
-                        {commitmentPeriod === undefined && (
-                            <>
-                                <Button
-                                    variant="contained"
-                                    color="warning"
-                                    fullWidth
-                                    onClick={() => clearState()}
-                                >
-                                    Start again
-                                </Button>
-                            </>
-                        )}
+
+                        <Button
+                            variant="contained"
+                            color="warning"
+                            fullWidth
+                            onClick={() => {
+                                dispatch({ type: "RESET_STATE" });
+                                clearState();
+                            }}
+                        >
+                            Start again
+                        </Button>
                     </Box>
                 </CardContent>
             </Card>

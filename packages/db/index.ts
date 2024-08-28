@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { $Enums, Prisma, PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient({
     log: ["query"],
 });
 
-export { Prisma, db };
+export { Prisma, db, $Enums };

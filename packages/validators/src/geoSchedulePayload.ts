@@ -37,24 +37,31 @@ const repeatingWeeklySchema = z.object({
     endDay: daysOfWeekSchema,
 });
 
-const createGeoScheduleBasePayloadSchema = z.object({
-    blocks: z.array(z.string()),
+const untilGeometryCriteriaSchema = z.object({
     untilLocation: placeSchema,
+});
+
+const createGeoScheduleBasePayloadSchema = untilGeometryCriteriaSchema.extend({
+    blocks: z.array(z.string()),
     repeatingTime: timeRangeSchema,
 });
 
+const dailySchema = z.object({
+    repeatingType: z.literal("daily"),
+    repeatingDaily: repeatingDailySchema,
+});
+
+const weeklySchema = z.object({
+    repeatingType: z.literal("weekly"),
+    repeatingWeekly: repeatingWeeklySchema,
+});
+
 const createWithWeeklySchema = createGeoScheduleBasePayloadSchema
-    .extend({
-        repeatingType: z.literal("weekly"),
-        repeatingWeekly: repeatingWeeklySchema,
-    })
+    .merge(weeklySchema)
     .strict();
 
 const createWithDailySchema = createGeoScheduleBasePayloadSchema
-    .extend({
-        repeatingType: z.literal("daily"),
-        repeatingDaily: repeatingDailySchema,
-    })
+    .merge(dailySchema)
     .strict();
 
 const createGeoSchedulePayloadSchema = z.discriminatedUnion("repeatingType", [
@@ -75,5 +82,9 @@ export {
     createWithWeeklySchema,
     createGeoScheduleBasePayloadSchema,
     createPartialGeoSchedulePayloadSchema,
+    placeSchema,
+    untilGeometryCriteriaSchema,
     byIdGeoSchedulePayloadSchema,
+    dailySchema,
+    weeklySchema,
 };

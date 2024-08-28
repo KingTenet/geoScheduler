@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 import type { Prisma } from "@GeoScheduler/db";
-import {
-    byIdGeoSchedulePayloadSchema,
-    createGeoSchedulePayloadSchema,
-} from "@GeoScheduler/validators";
+import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
@@ -69,19 +66,11 @@ export const geoSchedulesRouter = createTRPCRouter({
         });
     }),
 
-    getLatest: publicProcedure.query(async ({ ctx }) => {
-        const post = await ctx.db.geoScheduleConfig.findFirst({
-            orderBy: { createdDate: "desc" },
-        });
-
-        return post ?? null;
-    }),
-
     byId: publicProcedure
-        .input(byIdGeoSchedulePayloadSchema)
+        .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
-            const geoSchedule = await ctx.db.geoScheduleConfig.findFirst({
-                where: input,
+            const geoSchedule = await ctx.db.geoScheduleConfig.findUnique({
+                where: { id: input.id },
                 include: {
                     appsToBlock: {
                         include: {
@@ -97,8 +86,7 @@ export const geoSchedulesRouter = createTRPCRouter({
                     weeklyRecurrence: true,
                 },
             });
-
-            return geoSchedule ?? null;
+            return geoSchedule;
         }),
 
     delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
@@ -114,6 +102,7 @@ export const geoSchedulesRouter = createTRPCRouter({
                     userId: ctx.user.id,
                     latitude: input.untilLocation.latitude,
                     longitude: input.untilLocation.longitude,
+                    radius: input.untilLocation.radius,
                 },
             });
 

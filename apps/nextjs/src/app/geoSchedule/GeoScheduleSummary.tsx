@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -29,7 +30,6 @@ const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 export function GeoScheduleSummary() {
     const { isLoading, data: geoSchedules } =
         api.geoSchedules.getAll.useQuery();
-
     const router = useRouter();
 
     if (isLoading) {
@@ -45,88 +45,100 @@ export function GeoScheduleSummary() {
             <List>
                 {geoSchedules?.map((schedule) => (
                     <ListItem key={schedule.id} sx={{ px: 0, py: 2 }}>
-                        <Card sx={{ width: "100%" }}>
-                            <CardContent>
-                                <Typography variant="body1" gutterBottom>
-                                    Blocks{" "}
-                                    {schedule.appsToBlock?.apps.map((app) => (
+                        <Link
+                            href={`/geoSchedule/${schedule.id}/summary`}
+                            passHref
+                            style={{ textDecoration: "none", width: "100%" }}
+                        >
+                            <Card sx={{ width: "100%" }}>
+                                <CardContent>
+                                    <Typography variant="body1" gutterBottom>
+                                        Blocks{" "}
+                                        {schedule.appsToBlock?.apps.map(
+                                            (app) => (
+                                                <Chip
+                                                    key={app.id}
+                                                    label={app.appName}
+                                                    color="primary"
+                                                    size="small"
+                                                    sx={{ mr: 1, mb: 1 }}
+                                                />
+                                            ),
+                                        )}{" "}
+                                        from{" "}
                                         <Chip
-                                            key={app.id}
-                                            label={app.appName}
-                                            color="primary"
-                                            size="small"
-                                            sx={{ mr: 1, mb: 1 }}
-                                        />
-                                    ))}{" "}
-                                    from{" "}
-                                    <Chip
-                                        label={formatTime(schedule.fromTime)}
-                                        color="secondary"
-                                        size="small"
-                                    />
-                                    until{" "}
-                                    {schedule.toTime ? (
-                                        <Chip
-                                            label={formatTime(schedule.toTime)}
+                                            label={formatTime(
+                                                schedule.fromTime,
+                                            )}
                                             color="secondary"
                                             size="small"
                                         />
-                                    ) : (
-                                        "a location is reached"
-                                    )}
-                                </Typography>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        gap: 0.5,
-                                        mt: 1,
-                                        mb: 1,
-                                    }}
-                                >
-                                    {daysOfWeek.map((day, index) => {
-                                        const isActive =
-                                            schedule.dailyRecurrence?.repeatDays.includes(
-                                                day as any,
-                                            ) ||
-                                            (schedule.weeklyRecurrence &&
-                                                index >=
-                                                    daysOfWeek.indexOf(
-                                                        schedule
-                                                            .weeklyRecurrence
-                                                            .fromDay as any,
-                                                    ) &&
-                                                index <=
-                                                    daysOfWeek.indexOf(
-                                                        schedule
-                                                            .weeklyRecurrence
-                                                            .toDay as any,
-                                                    ));
-                                        return (
+                                        until{" "}
+                                        {schedule.toTime ? (
                                             <Chip
-                                                key={day}
-                                                label={day}
-                                                color={
-                                                    isActive
-                                                        ? "success"
-                                                        : "default"
-                                                }
+                                                label={formatTime(
+                                                    schedule.toTime,
+                                                )}
+                                                color="secondary"
                                                 size="small"
-                                                sx={{
-                                                    borderRadius: "50%",
-                                                    width: 28,
-                                                    height: 28,
-                                                    "& .MuiChip-label": {
-                                                        p: 0,
-                                                        fontSize: "0.7rem",
-                                                    },
-                                                }}
                                             />
-                                        );
-                                    })}
-                                </Box>
-                            </CardContent>
-                        </Card>
+                                        ) : (
+                                            "a location is reached"
+                                        )}
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexWrap: "wrap",
+                                            gap: 0.5,
+                                            mt: 1,
+                                            mb: 1,
+                                        }}
+                                    >
+                                        {daysOfWeek.map((day, index) => {
+                                            const isActive =
+                                                schedule.dailyRecurrence?.repeatDays.includes(
+                                                    day as any,
+                                                ) ||
+                                                (schedule.weeklyRecurrence &&
+                                                    index >=
+                                                        daysOfWeek.indexOf(
+                                                            schedule
+                                                                .weeklyRecurrence
+                                                                .fromDay as any,
+                                                        ) &&
+                                                    index <=
+                                                        daysOfWeek.indexOf(
+                                                            schedule
+                                                                .weeklyRecurrence
+                                                                .toDay as any,
+                                                        ));
+                                            return (
+                                                <Chip
+                                                    key={day}
+                                                    label={day}
+                                                    color={
+                                                        isActive
+                                                            ? "success"
+                                                            : "default"
+                                                    }
+                                                    size="small"
+                                                    sx={{
+                                                        borderRadius: "50%",
+                                                        width: 28,
+                                                        height: 28,
+                                                        "& .MuiChip-label": {
+                                                            p: 0,
+                                                            fontSize: "0.7rem",
+                                                        },
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </ListItem>
                 ))}
             </List>

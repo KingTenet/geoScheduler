@@ -126,8 +126,8 @@ enum ActionType {
 
 model WeeklyRecurrence {
     id                  String            @id @default(uuid())
-    fromDay             DayOfWeek?
-    toDay               DayOfWeek?
+    fromDay             DayOfWeek
+    toDay               DayOfWeek
     geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
     geoScheduleConfigId String            @unique
 }
@@ -178,6 +178,7 @@ model Place {
     user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
     latitude         Float
     longitude        Float
+    radius           Float
     geometryCriteria GeometryCriterium[]
 
     @@unique([userId, name])

@@ -30,10 +30,6 @@ model GeoScheduleConfig {
     Actions            Actions[]
 }*/
 
-type User = {
-    userId: string;
-};
-
 // function transformPayloadToPrismaCreate(
 //     input: z.infer<typeof createGeoSchedulePayloadSchema>,
 //     user: User,
@@ -54,7 +50,7 @@ type User = {
 // }
 
 export const geoSchedulesRouter = createTRPCRouter({
-    all: publicProcedure.query(({ ctx }) => {
+    getAll: publicProcedure.query(async ({ ctx }) => {
         return ctx.db.geoScheduleConfig.findMany({
             include: {
                 appsToBlock: {

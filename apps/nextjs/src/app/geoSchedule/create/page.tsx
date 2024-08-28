@@ -1,56 +1,52 @@
+"use client";
+
 import React, { useReducer } from "react";
+import { useRouter } from "next/navigation";
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 
-import CommitmentSlider from "./CommitmentSlider";
-import { EndTriggerSelector } from "./EndTriggerSelector";
-import { geoTaskScheduleReducer, initialState } from "./geoTaskScheduleReducer";
-import { TaskSelector } from "./TaskSelector";
-import TimeSelector from "./TimeSelector";
+import CommitmentSlider from "../../_components/CommitmentSlider";
+import { EndTriggerSelector } from "../../_components/EndTriggerSelector";
+import {
+    geoTaskScheduleReducer,
+    initialState,
+} from "../../_components/geoTaskScheduleReducer";
+import { Spinner } from "../../_components/Spinner";
+import { TaskSelector } from "../../_components/TaskSelector";
+import TimeSelector from "../../_components/TimeSelector";
+import { ToggleNextActionButton } from "../../_components/ToggleNextAction";
+import { useCreateGeoSchedule } from "../lib/createGeoSchedule";
 
-interface GeoTaskScheduleConfigMUIProps {
-    clearState: () => void;
-    taskOptions?: string[];
-}
-
-const ToggleNextActionButton = ({
-    label,
-    showButton,
-    showChildren,
-    children,
-}: {
-    showButton: Boolean;
-    showChildren: (clicked: Boolean) => Boolean;
-    label: string;
-    children: React.ReactNode;
-}) => {
-    const [clicked, updateClicked] = React.useState(false);
-
-    if (showChildren(clicked)) {
-        return <>{children}</>;
-    }
-
-    if (!showButton) {
-        return <></>;
-    }
-
-    return (
-        <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={() => updateClicked(true)}
-            sx={{ mt: 2 }}
-        >
-            {label}
-        </Button>
-    );
-};
-
-export function GeoTaskScheduleConfigMUI({
-    clearState,
-    taskOptions = ["Facebook", "Instagram", "Chrome", "VSCode", "Youtube"],
-}: GeoTaskScheduleConfigMUIProps) {
+export default function GeoTaskScheduleConfig() {
     const [state, dispatch] = useReducer(geoTaskScheduleReducer, initialState);
+    const [formSubmitting, updateFormSubmitting] = React.useState(false);
+    const router = useRouter();
+
+    const taskOptions = [
+        "Facebook",
+        "Instagram",
+        "Chrome",
+        "VSCode",
+        "Youtube",
+    ];
+
+    const createGeoSchedule = useCreateGeoSchedule();
+
+    const handleSubmit = async () => {
+        updateFormSubmitting(true);
+        try {
+            await createGeoSchedule(state);
+            // Redirect to the home page after successful submission
+            router.push("/");
+        } catch (error) {
+            // Handle error here (e.g., show an error message)
+            console.error("Error submitting form:", error);
+            updateFormSubmitting(false);
+        }
+    };
+
+    if (formSubmitting) {
+        return <Spinner label="Submitting..." />;
+    }
 
     return (
         <Box
@@ -171,9 +167,7 @@ export function GeoTaskScheduleConfigMUI({
                                 variant="contained"
                                 color="primary"
                                 fullWidth
-                                onClick={() =>
-                                    console.log("Schedule submitted")
-                                }
+                                onClick={() => handleSubmit()}
                                 sx={{ mt: 2 }}
                             >
                                 Submit Schedule
@@ -184,10 +178,7 @@ export function GeoTaskScheduleConfigMUI({
                             variant="contained"
                             color="warning"
                             fullWidth
-                            onClick={() => {
-                                dispatch({ type: "RESET_STATE" });
-                                clearState();
-                            }}
+                            onClick={() => dispatch({ type: "RESET_STATE" })}
                         >
                             Start again
                         </Button>

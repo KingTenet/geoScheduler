@@ -4,7 +4,6 @@ export type EndTriggers = LocationEndTriggers | TimeEndTriggers;
 // State shape
 export interface GeoTaskScheduleState {
     selectedTasks: Record<string, boolean>;
-    selectStartTimeButtonClicked: boolean;
     startTime?: number;
     endTrigger?: EndTriggers;
     endTime?: number;
@@ -15,9 +14,8 @@ export interface GeoTaskScheduleState {
 // Action types
 export type GeoTaskScheduleAction =
     | { type: "TOGGLE_TASK"; task: string }
-    | { type: "SET_START_TIME_BUTTON_CLICKED" }
     | { type: "SET_START_TIME"; time: number }
-    | { type: "SET_END_TRIGGER"; trigger: "time" | "location" }
+    | { type: "SET_END_TRIGGER"; trigger: EndTriggers }
     | { type: "SET_END_TIME"; time: number }
     | { type: "SET_END_LOCATION"; location: string }
     | { type: "SET_COMMITMENT_PERIOD"; period: number }
@@ -26,7 +24,6 @@ export type GeoTaskScheduleAction =
 // Initial state
 export const initialState: GeoTaskScheduleState = {
     selectedTasks: {},
-    selectStartTimeButtonClicked: false,
     startTime: undefined,
     endTrigger: undefined,
     endTime: undefined,
@@ -48,8 +45,6 @@ export function geoTaskScheduleReducer(
                     [action.task]: !state.selectedTasks[action.task],
                 },
             };
-        case "SET_START_TIME_BUTTON_CLICKED":
-            return { ...state, selectStartTimeButtonClicked: true };
         case "SET_START_TIME":
             return { ...state, startTime: action.time };
         case "SET_END_TRIGGER":

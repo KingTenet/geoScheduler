@@ -209,23 +209,23 @@ export default function CommitmentSlider({ onChange }: CommitmentSliderProps) {
                     </Box>
                 </Grid>
             </Grid>
-            <Typography
-                sx={{ fontSize: "x-large" }}
-                id="non-linear-slider"
-                gutterBottom
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "50px",
+                }}
             >
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginTop: "50px",
-                    }}
+                <Typography
+                    sx={{ fontSize: "x-large" }}
+                    id="non-linear-slider"
+                    gutterBottom
                 >
                     {valueLabel}
-                    <Emoji style={{ fontSize: "xxx-large" }} />
-                </Box>
-            </Typography>
+                </Typography>
+                <Emoji style={{ fontSize: "xxx-large" }} />
+            </Box>
         </Box>
     );
 }

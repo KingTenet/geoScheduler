@@ -1,32 +1,23 @@
-"use client";
+"use server";
 
-import { useState } from "react";
+import React from "react";
 
-import { GeoTaskScheduleConfigMUI } from "../_components/GeoTaskScheduleConfigMUI";
-import TimeSelector from "../_components/TimeSelector";
+import { api } from "~/trpc/server";
+import { GeoScheduleSummary } from "./GeoScheduleSummary";
 
-function WrappedSchedule() {
-    const [count, updateCount] = useState(0);
+// export default async function GeoSchedulesSummaryPage() {
 
-    return (
-        <GeoTaskScheduleConfigMUI
-            key={`Schedule_${count}`}
-            clearState={() => updateCount(count + 1)}
-        />
-    );
-}
-
-export default function GeoTaskScheduleMUIPage() {
-    return <WrappedSchedule />;
+export default async function HomePage() {
+    // You can await this here if you don't want to show Suspense fallback below
+    void api.geoSchedules.getAllPlaces.prefetch();
 
     return (
-        <TimeSelector
-            timeTitle="Start time"
-            dispatchTime={(elapsedMS) =>
-                console.log(
-                    `Time past midnight is ${elapsedMS / 1000 / 60 / 60} ${elapsedMS / 1000 / 60} ${elapsedMS / 1000}`,
-                )
-            }
-        />
+        <main className="container h-screen py-16">
+            <div className="flex flex-col items-center justify-center gap-4">
+                <div className="w-full max-w-2xl overflow-y-scroll">
+                    <GeoScheduleSummary />
+                </div>
+            </div>
+        </main>
     );
 }

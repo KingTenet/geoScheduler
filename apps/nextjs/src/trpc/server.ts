@@ -29,3 +29,17 @@ export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
     caller,
     getQueryClient,
 );
+
+// export const trpc = createTRPCNext<AppRouter>({
+//     config() {
+//       return {
+//         links: [
+//           httpBatchLink({
+//             url: getBaseUrl() + '/api/trpc',
+//           }),
+//         ],
+//       };
+//     },
+//     ssr: true,
+//     ssrPrepass,
+//   });

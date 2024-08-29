@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { AppBar, Button, Toolbar, Typography } from "@mui/material";
 
 import { TRPCReactProvider } from "~/trpc/react";
-// import "~/styles/globals.css";
-
-// import { Inter as FontSans } from "next/font/google";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
-import { cn } from "@GeoScheduler/ui";
-
-// const fontSans = FontSans({
-//     subsets: ["latin"],
-//     variable: "--font-sans",
-// });
-
 export const metadata: Metadata = {
-    title: "Create T3 Turbo",
-    description: "Simple monorepo with shared backend for web & mobile apps",
+    title: "GeoScheduler",
+    description: "Manage your geo-based schedules",
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -31,13 +23,30 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     content="initial-scale=1, width=device-width"
                 />
             </head>
-            <body
-                className={cn(
-                    "min-h-screen bg-background font-sans antialiased",
-                    // fontSans.variable,
-                )}
-            >
-                <TRPCReactProvider>{children}</TRPCReactProvider>
+            <body>
+                <TRPCReactProvider>
+                    <AppBar position="static">
+                        <Toolbar>
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{ flexGrow: 1 }}
+                            >
+                                GeoScheduler
+                            </Typography>
+                            <Link href="/" passHref>
+                                <Button color="inherit">Home</Button>
+                            </Link>
+                            <Link href="/places" passHref>
+                                <Button color="inherit">Places</Button>
+                            </Link>
+                            <Link href="/geoSchedule" passHref>
+                                <Button color="inherit">Schedules</Button>
+                            </Link>
+                        </Toolbar>
+                    </AppBar>
+                    <main>{children}</main>
+                </TRPCReactProvider>
             </body>
         </html>
     );

@@ -9,7 +9,8 @@ import { GeoScheduleSummary } from "./GeoScheduleSummaries";
 
 export default async function HomePage() {
     // You can await this here if you don't want to show Suspense fallback below
-    void api.geoSchedules.getAllPlaces.prefetch();
+    const geoSchedyles = await api.geoSchedules.getAll.prefetch();
+    console.log(geoSchedyles);
 
     return (
         <main className="container h-screen py-16">

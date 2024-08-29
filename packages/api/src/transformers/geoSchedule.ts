@@ -75,7 +75,16 @@ function transformAppsToBlockFromDB(
 }
 
 function transformPlace(place: PrismaPlace): PrismaPlace {
-    const { id, name, userId, latitude, longitude, radius } = place;
+    const {
+        id,
+        name,
+        userId,
+        latitude,
+        longitude,
+        radius,
+        createdAt,
+        updatedAt,
+    } = place;
 
     return {
         id,
@@ -84,6 +93,8 @@ function transformPlace(place: PrismaPlace): PrismaPlace {
         latitude,
         longitude,
         radius,
+        createdAt,
+        updatedAt,
     };
 }
 

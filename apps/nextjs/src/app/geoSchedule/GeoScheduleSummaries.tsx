@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import AddIcon from "@mui/icons-material/Add";
 import {
     Box,
+    Chip as BrokenChip,
     Card,
     CardContent,
-    Chip,
     Fab,
     List,
     ListItem,
@@ -20,6 +20,10 @@ import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
 
 import { api } from "~/trpc/react";
 import { Spinner } from "../_components/Spinner";
+
+const Chip = ({ children, ...props }) => {
+    return <BrokenChip {...props}>{children}</BrokenChip>;
+};
 
 function formatTime(seconds: number | undefined | null): string {
     if (seconds === undefined || seconds === null) return "N/A";
@@ -58,40 +62,38 @@ export function GeoScheduleSummary() {
                         >
                             <Card sx={{ width: "100%" }}>
                                 <CardContent>
-                                    <Typography variant="body1" gutterBottom>
-                                        Blocks{" "}
-                                        {schedule.blocks.map((app) => (
-                                            <Chip
-                                                key={app}
-                                                label={app}
-                                                color="primary"
-                                                size="small"
-                                                sx={{ mr: 1, mb: 1 }}
-                                            />
-                                        ))}{" "}
-                                        from{" "}
+                                    {/* <Typography variant="body1" gutterBottom> */}
+                                    Blocks{" "}
+                                    {schedule.blocks.map((app) => (
+                                        <Chip
+                                            key={app}
+                                            label={app}
+                                            color="primary"
+                                            size="small"
+                                            sx={{ mr: 1, mb: 1 }}
+                                        />
+                                    ))}{" "}
+                                    from{" "}
+                                    <Chip
+                                        label={formatTime(
+                                            schedule.repeatingTime.startTime,
+                                        )}
+                                        color="secondary"
+                                        size="small"
+                                    />
+                                    until{" "}
+                                    {schedule.repeatingTime.endTime ? (
                                         <Chip
                                             label={formatTime(
-                                                schedule.repeatingTime
-                                                    .startTime,
+                                                schedule.repeatingTime.endTime,
                                             )}
                                             color="secondary"
                                             size="small"
                                         />
-                                        until{" "}
-                                        {schedule.repeatingTime.endTime ? (
-                                            <Chip
-                                                label={formatTime(
-                                                    schedule.repeatingTime
-                                                        .endTime,
-                                                )}
-                                                color="secondary"
-                                                size="small"
-                                            />
-                                        ) : (
-                                            "a location is reached"
-                                        )}
-                                    </Typography>
+                                    ) : (
+                                        "a location is reached"
+                                    )}
+                                    {/* </Typography> */}
                                     <Box
                                         sx={{
                                             display: "flex",

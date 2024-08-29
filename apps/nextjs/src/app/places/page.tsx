@@ -1,4 +1,3 @@
-// apps/nextjs/src/app/places/page.tsx
 "use client";
 
 import React from "react";
@@ -8,6 +7,7 @@ import {
     Button,
     List,
     ListItem,
+    ListItemButton,
     ListItemText,
     Paper,
     Typography,
@@ -30,15 +30,16 @@ export default function PlacesPage() {
             </Typography>
             <List>
                 {places?.map((place) => (
-                    <ListItem
-                        key={place.id}
-                        component={Paper}
-                        sx={{ mb: 2, p: 2 }}
-                    >
-                        <ListItemText
-                            primary={place.name}
-                            secondary={`Lat: ${place.latitude.toFixed(6)}, Long: ${place.longitude.toFixed(6)}, Radius: ${place.radius.toFixed(2)}m`}
-                        />
+                    <ListItem key={place.id} component={Paper} sx={{ mb: 2 }}>
+                        <ListItemButton
+                            component={Link}
+                            href={`/places/${place.id}`}
+                        >
+                            <ListItemText
+                                primary={place.name}
+                                secondary={`Lat: ${place.latitude.toFixed(6)}, Long: ${place.longitude.toFixed(6)}, Radius: ${place.radius.toFixed(2)}m`}
+                            />
+                        </ListItemButton>
                     </ListItem>
                 ))}
             </List>

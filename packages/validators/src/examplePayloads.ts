@@ -1,12 +1,12 @@
 import type { z } from "zod";
 
-import type { createGeoSchedulePayloadSchema } from "./geoSchedulePayload";
+import type { actuallyCreateGeoSchedulePayloadSchema } from "./geoSchedulePayload";
 
-type createGeoSchedulePayloadSchemaType = z.infer<
-    typeof createGeoSchedulePayloadSchema
+type CreateGeoSchedulePayload = z.infer<
+    typeof actuallyCreateGeoSchedulePayloadSchema
 >;
 
-const examplePayloadWeekly: createGeoSchedulePayloadSchemaType = {
+const examplePayloadWeekly: CreateGeoSchedulePayload = {
     blocks: ["Chrome", "Facebook"],
     untilLocation: {
         longitude: 0,
@@ -24,7 +24,7 @@ const examplePayloadWeekly: createGeoSchedulePayloadSchemaType = {
     },
 };
 
-const examplePayloadDaily: createGeoSchedulePayloadSchemaType = {
+const examplePayloadDaily: CreateGeoSchedulePayload = {
     blocks: ["Chrome", "Facebook"],
     untilLocation: {
         longitude: 0,

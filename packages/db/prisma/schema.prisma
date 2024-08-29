@@ -38,7 +38,6 @@ model AppsToBlock {
     id   String @id @default(uuid())
     apps App[]
 
-    actions   Actions? @relation(fields: [actionsId], references: [id])
     actionsId String?
 
     geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
@@ -55,8 +54,8 @@ model App {
 model GeoScheduleConfig {
     id                 String                 @id @default(uuid())
     geometryCriteria   GeometryCriterium[]
-    fromTime           Int?
-    toTime             Int?
+    fromTime           Int
+    toTime             Int
     paused             Boolean
     updateDelayType    UpdateDelayType?
     updateDelaySeconds Int?
@@ -73,20 +72,16 @@ model GeoScheduleConfig {
 }
 
 model Actions {
-    id                    String                @id @default(uuid())
-    blockedApps           AppsToBlock[]
-    geoScheduleConfig     GeoScheduleConfig     @relation(fields: [geoScheduleConfigId], references: [id])
+    id                    String                 @id @default(uuid())
+    geoScheduleConfig     GeoScheduleConfig      @relation(fields: [geoScheduleConfigId], references: [id])
     geoScheduleConfigId   String
-    date                  DateTime
-    actionType            ActionType
     deletionDateThreshold DateTime
     deletionStatus        ActionDeletionStatus?
-    executionStatus       ActionExecutionStatus
-    password              String?
+    executionStatus       ActionExecutionStatus?
     fromDate              DateTime
     toDate                DateTime
-    fromTime              DateTime
-    toTime                DateTime
+
+    @@unique([geoScheduleConfigId, fromDate])
 }
 
 model ConfigurationOptions {
@@ -117,11 +112,6 @@ enum ActionExecutionStatus {
     WONT_FINISH
     FINISHED
     FAILED
-}
-
-enum ActionType {
-    START_BLOCK
-    STOP_BLOCK
 }
 
 model WeeklyRecurrence {

@@ -14,6 +14,9 @@ import {
     ListItem,
     Typography,
 } from "@mui/material";
+import { z } from "zod";
+
+import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
 
 import { api } from "~/trpc/react";
 import { Spinner } from "../_components/Spinner";
@@ -27,9 +30,12 @@ function formatTime(seconds: number | undefined | null): string {
 
 const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+type GeoSchedule = z.infer<typeof createGeoSchedulePayloadSchema>;
+
 export function GeoScheduleSummary() {
     const { isLoading, data: geoSchedules } =
         api.geoSchedules.getAll.useQuery();
+
     const router = useRouter();
 
     if (isLoading) {
@@ -43,7 +49,7 @@ export function GeoScheduleSummary() {
     return (
         <Box sx={{ p: 2, position: "relative", minHeight: "100vh" }}>
             <List>
-                {geoSchedules?.map((schedule) => (
+                {geoSchedules?.map((schedule: GeoSchedule) => (
                     <ListItem key={schedule.id} sx={{ px: 0, py: 2 }}>
                         <Link
                             href={`/geoSchedule/${schedule.id}/summary`}
@@ -54,30 +60,30 @@ export function GeoScheduleSummary() {
                                 <CardContent>
                                     <Typography variant="body1" gutterBottom>
                                         Blocks{" "}
-                                        {schedule.appsToBlock?.apps.map(
-                                            (app) => (
-                                                <Chip
-                                                    key={app.id}
-                                                    label={app.appName}
-                                                    color="primary"
-                                                    size="small"
-                                                    sx={{ mr: 1, mb: 1 }}
-                                                />
-                                            ),
-                                        )}{" "}
+                                        {schedule.blocks.map((app) => (
+                                            <Chip
+                                                key={app}
+                                                label={app}
+                                                color="primary"
+                                                size="small"
+                                                sx={{ mr: 1, mb: 1 }}
+                                            />
+                                        ))}{" "}
                                         from{" "}
                                         <Chip
                                             label={formatTime(
-                                                schedule.fromTime,
+                                                schedule.repeatingTime
+                                                    .startTime,
                                             )}
                                             color="secondary"
                                             size="small"
                                         />
                                         until{" "}
-                                        {schedule.toTime ? (
+                                        {schedule.repeatingTime.endTime ? (
                                             <Chip
                                                 label={formatTime(
-                                                    schedule.toTime,
+                                                    schedule.repeatingTime
+                                                        .endTime,
                                                 )}
                                                 color="secondary"
                                                 size="small"
@@ -97,21 +103,24 @@ export function GeoScheduleSummary() {
                                     >
                                         {daysOfWeek.map((day, index) => {
                                             const isActive =
-                                                schedule.dailyRecurrence?.repeatDays.includes(
-                                                    day as any,
-                                                ) ||
-                                                (schedule.weeklyRecurrence &&
+                                                (schedule.repeatingType ===
+                                                    "daily" &&
+                                                    schedule.repeatingDaily.includes(
+                                                        day as any,
+                                                    )) ||
+                                                (schedule.repeatingType ===
+                                                    "weekly" &&
                                                     index >=
                                                         daysOfWeek.indexOf(
                                                             schedule
-                                                                .weeklyRecurrence
-                                                                .fromDay as any,
+                                                                .repeatingWeekly
+                                                                .startDay as any,
                                                         ) &&
                                                     index <=
                                                         daysOfWeek.indexOf(
                                                             schedule
-                                                                .weeklyRecurrence
-                                                                .toDay as any,
+                                                                .repeatingWeekly
+                                                                .endDay as any,
                                                         ));
                                             return (
                                                 <Chip

@@ -42,6 +42,7 @@ const untilGeometryCriteriaSchema = z.object({
 });
 
 const createGeoScheduleBasePayloadSchema = untilGeometryCriteriaSchema.extend({
+    id: z.string(),
     blocks: z.array(z.string()),
     repeatingTime: timeRangeSchema,
 });
@@ -69,6 +70,14 @@ const createGeoSchedulePayloadSchema = z.discriminatedUnion("repeatingType", [
     createWithDailySchema.required().strict(),
 ]);
 
+const actuallyCreateGeoSchedulePayloadSchema = z.discriminatedUnion(
+    "repeatingType",
+    [
+        createWithWeeklySchema.omit({ id: true }).required().strict(),
+        createWithDailySchema.omit({ id: true }).required().strict(),
+    ],
+);
+
 const createPartialGeoSchedulePayloadSchema = z.union([
     createWithWeeklySchema.partial().strict(),
     createWithDailySchema.partial().strict(),
@@ -77,6 +86,7 @@ const createPartialGeoSchedulePayloadSchema = z.union([
 const byIdGeoSchedulePayloadSchema = z.object({ id: z.string() }).strict();
 
 export {
+    actuallyCreateGeoSchedulePayloadSchema,
     createGeoSchedulePayloadSchema,
     createWithDailySchema,
     createWithWeeklySchema,

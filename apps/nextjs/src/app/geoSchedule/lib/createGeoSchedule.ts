@@ -5,7 +5,7 @@ import type { createGeoSchedulePayloadSchema as FullSchema } from "@GeoScheduler
 import {
     // examplePayloadDaily,
     // examplePayloadWeekly,
-    createGeoSchedulePayloadSchema as fullPayload,
+    actuallyCreateGeoSchedulePayloadSchema as fullPayload,
 } from "@GeoScheduler/validators";
 
 import type { GeoTaskScheduleState } from "~/app/_components/geoTaskScheduleReducer";

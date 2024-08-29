@@ -3,18 +3,27 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
+import { z } from "zod";
+
+import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
 
 import { Spinner } from "~/app/_components/Spinner";
 import { api } from "~/trpc/react";
+
+type GeoSchedule = z.infer<typeof createGeoSchedulePayloadSchema>;
 
 export default function GeoScheduleSummaryPage() {
     const params = useParams();
     const router = useRouter();
     const { id } = params;
 
-    const { data: geoSchedule, isLoading } = api.geoSchedules.byId.useQuery({
-        id: id as string,
-    });
+    const {
+        data: geoSchedule,
+        isLoading,
+    }: { data: GeoSchedule; isLoading: boolean } =
+        api.geoSchedules.byId.useQuery({
+            id: id as string,
+        });
 
     if (isLoading) {
         return <Spinner label="Loading..." />;
@@ -35,45 +44,38 @@ export default function GeoScheduleSummaryPage() {
                     <Typography variant="h4" gutterBottom>
                         Geoschedule Summary
                     </Typography>
-                    <Typography variant="body1" gutterBottom>
+                    {/* <Typography variant="body1" gutterBottom>
                         ID: {geoSchedule.id}
-                    </Typography>
+                    </Typography> */}
                     <Typography variant="body1" gutterBottom>
-                        Blocks:{" "}
-                        {geoSchedule.appsToBlock?.apps
-                            .map((app) => app.appName)
-                            .join(", ")}
+                        Blocks: {geoSchedule.blocks.join(", ")}
                     </Typography>
                     <Typography variant="body1" gutterBottom>
                         Start Time:{" "}
-                        {geoSchedule.fromTime
-                            ? new Date(
-                                  geoSchedule.fromTime * 1000,
-                              ).toLocaleTimeString()
-                            : "N/A"}
+                        {new Date(
+                            geoSchedule.repeatingTime.startTime * 1000,
+                        ).toLocaleTimeString()}
                     </Typography>
                     <Typography variant="body1" gutterBottom>
                         End Time:{" "}
-                        {geoSchedule.toTime
+                        {geoSchedule.repeatingTime.endTime
                             ? new Date(
-                                  geoSchedule.toTime * 1000,
+                                  geoSchedule.repeatingTime.endTime * 1000,
                               ).toLocaleTimeString()
                             : "N/A"}
                     </Typography>
                     <Typography variant="body1" gutterBottom>
-                        Recurrence:{" "}
-                        {geoSchedule.dailyRecurrence ? "Daily" : "Weekly"}
+                        Recurrence: {geoSchedule.repeatingType}
                     </Typography>
-                    {geoSchedule.dailyRecurrence && (
+                    {geoSchedule.repeatingType === "daily" && (
                         <Typography variant="body1" gutterBottom>
-                            Days:{" "}
-                            {geoSchedule.dailyRecurrence.repeatDays.join(", ")}
+                            Days: {geoSchedule.repeatingDaily.join(", ")}
                         </Typography>
                     )}
-                    {geoSchedule.weeklyRecurrence && (
+                    {geoSchedule.repeatingType === "weekly" && (
                         <Typography variant="body1" gutterBottom>
-                            From: {geoSchedule.weeklyRecurrence.fromDay} To:{" "}
-                            {geoSchedule.weeklyRecurrence.toDay}
+                            From: {geoSchedule.repeatingWeekly.startDay} To:{" "}
+                            {geoSchedule.repeatingWeekly.endDay}
                         </Typography>
                     )}
                     <Box sx={{ mt: 2 }}>

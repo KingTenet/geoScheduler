@@ -1,54 +1,18 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import type { Prisma } from "@GeoScheduler/db";
-import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
+import {
+    actuallyCreateGeoSchedulePayloadSchema,
+    createGeoSchedulePayloadSchema,
+} from "@GeoScheduler/validators";
 
+import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-
-/*
-
-model GeoScheduleConfig {
-    id                 String                 @id @default(uuid())
-    externalBlocks     ExternalBlock[]
-    geometryCriteria   GeometryCriterium[]
-    fromTime           DateTime?
-    toTime             DateTime?
-    paused             Boolean
-    updateDelayType    UpdateDelayType?
-    updateDelaySeconds Int?
-    createdDate        DateTime               @default(now())
-    updatedDate        DateTime               @updatedAt
-    deleteStartedDate  DateTime?
-    deletionStatus     ScheduleDeletedStatus?
-    user               User                   @relation(fields: [userId], references: [id])
-    userId             String
-    dailyRecurrence    DailyRecurrence?
-    weeklyRecurrence   WeeklyRecurrence?
-    Actions            Actions[]
-}*/
-
-// function transformPayloadToPrismaCreate(
-//     input: z.infer<typeof createGeoSchedulePayloadSchema>,
-//     user: User,
-// ): Prisma.GeoScheduleConfigCreateArgs {
-
-// }
-
-// function isWeekly(
-//     maybeWeekly: z.infer<typeof createGeoSchedulePayloadSchema>,
-// ): maybeWeekly is z.infer<typeof createWithWeeklySchema> {
-//     return Boolean("repeatingWeekly" in maybeWeekly);
-// }
-
-// function isDaily(
-//     maybe: z.infer<typeof createGeoSchedulePayloadSchema>,
-// ): maybe is z.infer<typeof createWithDailySchema> {
-//     return Boolean("repeatingDaily" in maybe);
-// }
 
 export const geoSchedulesRouter = createTRPCRouter({
     getAll: publicProcedure.query(async ({ ctx }) => {
-        return ctx.db.geoScheduleConfig.findMany({
+        const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
             include: {
                 appsToBlock: {
                     include: {
@@ -64,10 +28,12 @@ export const geoSchedulesRouter = createTRPCRouter({
                 weeklyRecurrence: true,
             },
         });
+        return geoSchedules.map(transformGeoScheduleFromDB);
     }),
 
     byId: publicProcedure
         .input(z.object({ id: z.string() }))
+        .output(createGeoSchedulePayloadSchema)
         .query(async ({ ctx, input }) => {
             const geoSchedule = await ctx.db.geoScheduleConfig.findUnique({
                 where: { id: input.id },
@@ -86,7 +52,13 @@ export const geoSchedulesRouter = createTRPCRouter({
                     weeklyRecurrence: true,
                 },
             });
-            return geoSchedule;
+            if (!geoSchedule) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: `${input.id} could not be found in prisma schema geoScheduleConfig`,
+                });
+            }
+            return transformGeoScheduleFromDB(geoSchedule);
         }),
 
     delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
@@ -94,7 +66,7 @@ export const geoSchedulesRouter = createTRPCRouter({
     }),
 
     create: publicProcedure
-        .input(createGeoSchedulePayloadSchema)
+        .input(actuallyCreateGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
             const place = await ctx.db.place.create({
                 data: {

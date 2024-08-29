@@ -3,7 +3,7 @@
 import React from "react";
 
 import { api } from "~/trpc/server";
-import { GeoScheduleSummary } from "./GeoScheduleSummary";
+import { GeoScheduleSummary } from "./GeoScheduleSummaries";
 
 // export default async function GeoSchedulesSummaryPage() {
 

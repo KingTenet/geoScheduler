@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
-import type { Prisma } from "@GeoScheduler/db";
-import type {
+import type { $Enums, Prisma } from "@GeoScheduler/db";
+import {
     createGeoSchedulePayloadSchema,
     dailySchema,
     untilGeometryCriteriaSchema,
@@ -20,9 +20,9 @@ function transformAppsFromDB(app: PrismaApp): PrismaApp {
     };
 }
 
-type PrismaPlace = Prisma.PlaceGetPayload<undefined>;
+export type PrismaPlace = Prisma.PlaceGetPayload<undefined>;
 
-type PrismaGeoSchedule = Prisma.GeoScheduleConfigGetPayload<{
+export type PrismaGeoSchedule = Prisma.GeoScheduleConfigGetPayload<{
     include: {
         appsToBlock: {
             include: {
@@ -39,22 +39,23 @@ type PrismaGeoSchedule = Prisma.GeoScheduleConfigGetPayload<{
     };
 }>;
 
-type PrismaApp = Prisma.AppGetPayload<undefined>;
+export type PrismaApp = Prisma.AppGetPayload<undefined>;
 
-type PrismaAppsToBlock = Prisma.AppsToBlockGetPayload<{
+export type PrismaAppsToBlock = Prisma.AppsToBlockGetPayload<{
     include: {
         apps: true;
     };
 }>;
 
-type PrismaGeometryCriteria = Prisma.GeometryCriteriumGetPayload<{
+export type PrismaGeometryCriteria = Prisma.GeometryCriteriumGetPayload<{
     include: {
         place: true;
     };
 }>;
 
-type PrismaDailyRecurrence = Prisma.DailyRecurrenceGetPayload<undefined>;
-type PrismaWeeklyRecurrence = Prisma.WeeklyRecurrenceGetPayload<undefined>;
+export type PrismaDailyRecurrence = Prisma.DailyRecurrenceGetPayload<undefined>;
+export type PrismaWeeklyRecurrence =
+    Prisma.WeeklyRecurrenceGetPayload<undefined>;
 
 function transformAppsToBlockFromDB(
     appsToBlock: PrismaAppsToBlock | null,
@@ -137,7 +138,7 @@ type UntilLocationPayload = z.infer<typeof untilGeometryCriteriaSchema>;
 type WithWeeklyPayload = z.infer<typeof weeklySchema>;
 type WithDailyPayload = z.infer<typeof dailySchema>;
 
-function transformGeoScheduleFromDB(
+export function transformGeoScheduleFromDB(
     prismaGeoSchedule: PrismaGeoSchedule,
 ): GeoSchedulePayload {
     const {
@@ -238,13 +239,22 @@ function transformGeoScheduleFromDB(
         };
     }
 
-    return {
-        blocks: appsToBlock?.apps.map(({ appName }) => appName) || [],
+    const geoSchedulePayload = {
+        id,
+        blocks: appsToBlock?.apps.map(({ appName }) => appName) ?? [],
         ...getUntilLocation(),
         ...getRepeatingConfig(recurrence),
         repeatingTime: {
-            startTime: fromTime || 0,
-            endTime: toTime || 0,
+            startTime: fromTime,
+            endTime: toTime,
         },
     };
+
+    const { data, success } =
+        createGeoSchedulePayloadSchema.safeParse(geoSchedulePayload);
+    if (!success) {
+        throw new Error("Schema validation failed");
+    }
+
+    return data;
 }

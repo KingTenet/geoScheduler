@@ -36,7 +36,7 @@ export default function GeoTaskScheduleConfig() {
         try {
             await createGeoSchedule(state);
             // Redirect to the home page after successful submission
-            router.push("/");
+            router.push("/geoSchedule/");
         } catch (error) {
             // Handle error here (e.g., show an error message)
             console.error("Error submitting form:", error);

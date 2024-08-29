@@ -1,6 +1,7 @@
 import { actionsRouter } from "./routers/actions";
 import { appsRouter } from "./routers/apps";
 import { geoSchedulesRouter } from "./routers/geoSchedules";
+import { placesRouter } from "./routers/places";
 import { userRouter } from "./routers/user";
 import { createCallerFactory, createTRPCRouter } from "./trpc";
 
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
     apps: appsRouter,
     user: userRouter,
     actions: actionsRouter,
+    places: placesRouter,
 });
 
 // export type definition of API

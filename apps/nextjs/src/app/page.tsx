@@ -1,21 +1,22 @@
 "use server";
 
-import { Box } from "@mui/material";
+import Link from "next/link";
+import { Button } from "@mui/material";
 
 export default async function HomePage() {
     return (
         <>
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "top",
-                    minHeight: "90vh",
-                    bgcolor: "background.default",
-                }}
-            >
-                Blah blah blah
-            </Box>
+            <Link href="/places/create" passHref>
+                <Button variant="contained" color="primary">
+                    Add New Place
+                </Button>
+            </Link>
+
+            <Link href="/geoSchedule/" passHref>
+                <Button variant="contained" color="primary">
+                    Geo schedules
+                </Button>
+            </Link>
         </>
     );
 }

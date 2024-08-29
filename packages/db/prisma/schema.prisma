@@ -169,6 +169,8 @@ model Place {
     latitude         Float
     longitude        Float
     radius           Float
+    createdAt        DateTime            @default(now())
+    updatedAt        DateTime            @updatedAt
     geometryCriteria GeometryCriterium[]
 
     @@unique([userId, name])

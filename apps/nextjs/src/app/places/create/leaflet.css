@@ -1,0 +1,27 @@
+.map-wrapper {
+    height: 300px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.map-container {
+    height: 100%;
+    width: 100%;
+}
+
+div.leaflet-control-container > div.leaflet-top.leaflet-right {
+    top:50%;
+    right:50%;
+}
+
+ div.leaflet-control-container > div.leaflet-top.leaflet-right > .circle-overlay {
+    margin: 0 0 0 0;
+    position: absolute;
+    height:300px;
+    top : 100%;
+    left: 100%;
+    z-index:-1000;
+    transform: translate(-50%, -50%);
+    cursor:grab;
+}

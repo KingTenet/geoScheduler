@@ -1,4 +1,3 @@
-// src/index.ts
 import ApiClient from "./api/ApiClient";
 import { OAuth } from "./auth/tokens";
 import initEnv from "./initEnv";
@@ -13,10 +12,17 @@ async function main() {
         env.TOKENS_FILE_PATH,
     );
 
+    /**
+     * Scheduler
+     * Periodically actions will be requested from the database
+     * These actions need to be added to the local database
+     * They then
+     */
+
     try {
         const apiClient = new ApiClient(env.API_BASE_URL, auth);
-        const geoScheduleById = await apiClient.getGeoScheduleById("abc");
-        console.log(geoScheduleById);
+        const actions = await apiClient.getActions();
+        console.log(actions);
     } catch (error) {
         console.error("Error:", error);
     }

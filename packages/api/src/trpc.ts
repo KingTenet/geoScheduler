@@ -6,11 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@GeoScheduler/db";
+
+import { verify } from "./auth";
 
 /**
  * 1. CONTEXT
@@ -119,4 +121,56 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure.use(timingMiddleware);
+const _publicProcedure = t.procedure.use(timingMiddleware);
+
+// TODO remove for prod
+export const publicProcedure = _publicProcedure.use(
+    async function devUsers(opts) {
+        const userAuthIdpId = "Felix";
+
+        const user = await opts.ctx.db.user.upsert({
+            where: {
+                id: userAuthIdpId,
+            },
+            update: {},
+            create: {
+                id: userAuthIdpId,
+            },
+        });
+
+        return opts.next({
+            ctx: {
+                user: user,
+            },
+        });
+    },
+);
+
+// procedure that asserts that the user is logged in
+export const authedProcedure = _publicProcedure.use(
+    async function isAuthed(opts) {
+        const { ctx } = opts;
+
+        const bearerToken = ctx.headers
+            .get("authorization")
+            ?.split("Bearer ")[1];
+
+        try {
+            if (bearerToken) {
+                const jwt = await verify(bearerToken);
+
+                if (jwt.sub) {
+                    return opts.next({
+                        ctx: {
+                            userAuthIdpId: jwt.sub,
+                            auth: jwt,
+                        },
+                    });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+    },
+);

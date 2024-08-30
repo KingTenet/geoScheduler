@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./dev.db"
+}
+
+model AppsToBlock {
+    id        String  @id @default(uuid())
+    apps      App[]
+    actionsId String?
+}
+
+model App {
+    id            String      @id @default(uuid())
+    appName       String
+    appsToBlock   AppsToBlock @relation(fields: [appsToBlockId], references: [id], onDelete: Cascade)
+    appsToBlockId String
+}
+
+model DaemonActions {
+    id                    String   @id
+    deletionDateThreshold DateTime
+    // executionStatus       ActionExecutionStatus?
+    fromDate              DateTime
+    toDate                DateTime
+}
+
+model ConfigurationOptions {
+    id               String          @id @default(uuid())
+    option           String
+    actionTemplate   ActionTemplate? @relation(fields: [actionTemplateId], references: [id], onDelete: Cascade)
+    actionTemplateId String?
+}
+
+model ActionTemplate {
+    id     String                 @id @default(uuid())
+    name   String
+    config ConfigurationOptions[]
+
+    @@unique([name])
+}
+
+// enum ActionDeletionStatus {
+//     DELETED
+//     FAILED
+// }
+
+// enum ActionExecutionStatus {
+//     WONT_START
+//     STARTED
+//     WONT_FINISH
+//     FINISHED
+//     FAILED
+// }

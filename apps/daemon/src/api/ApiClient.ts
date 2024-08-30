@@ -1,11 +1,4 @@
 import { TRPCClientError } from "@trpc/client";
-import { TRPCError } from "@trpc/server";
-
-import { RouterInputs, RouterOutputs } from "@GeoScheduler/api";
-import {
-    byIdGeoSchedulePayloadSchema,
-    createGeoSchedulePayloadSchema,
-} from "@GeoScheduler/validators";
 
 import type { OAuth } from "../auth/tokens";
 import { getTRPCClient } from "../trpcClient";
@@ -16,7 +9,7 @@ export default class ApiClient {
 
     constructor(apiBaseUrl: string, auth: OAuth) {
         this.auth = auth;
-        this.trpcClient = getTRPCClient(apiBaseUrl);
+        this.trpcClient = getTRPCClient(apiBaseUrl, auth);
     }
 
     // private async getHeaders() {
@@ -25,23 +18,13 @@ export default class ApiClient {
     //     };
     // }
 
-    async getGeoScheduleById(id: string) {
+    async getGeoSchedules() {
         try {
-            const { data: validPayload } =
-                byIdGeoSchedulePayloadSchema.safeParse({
-                    id,
-                });
+            const geoSchedules =
+                await this.trpcClient.geoSchedules.getAll.query();
 
-            if (!validPayload) {
-                throw new Error("");
-            }
-
-            // You can await this here if you don't want to show Suspense fallback below
-
-            const geoSchedule =
-                await this.trpcClient.geoSchedules.byId.query(validPayload);
-
-            return await this.trpcClient.geoSchedules.all.query();
+            return geoSchedules;
+            // return await this.trpcClient.geoSchedules.getAll.query();
         } catch (err) {
             if (err instanceof TRPCClientError) {
                 console.log(err);
@@ -52,21 +35,19 @@ export default class ApiClient {
         }
     }
 
-    async createGeoSchedule(data: RouterInputs["geoSchedules"]["create"]) {
+    async getActions() {
         try {
-            const { data: validPayload } =
-                createGeoSchedulePayloadSchema.safeParse({
-                    id: data,
-                });
+            const actions = await this.trpcClient.actions.getAll.query();
 
-            return await this.trpcClient.geoSchedules.create.mutate(
-                validPayload as RouterInputs["geoSchedules"]["create"],
-            );
+            return actions;
+            // return await this.trpcClient.geoSchedules.getAll.query();
         } catch (err) {
-            console.error("Failed to create geo schedule:", err);
+            if (err instanceof TRPCClientError) {
+                console.log(err);
+                console.log("It is a TRPC Error!!!");
+            }
+            console.error("Failed to fetch actions:", err);
             throw err;
         }
     }
-
-    // Add more methods as needed for other API endpoints
 }

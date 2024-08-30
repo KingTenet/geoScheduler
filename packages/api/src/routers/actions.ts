@@ -7,10 +7,10 @@ import {
     createActionsFromGeoScheduleConfig,
     transformActionFromDB,
 } from "../transformers/actions";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { authedProcedure, createTRPCRouter } from "../trpc";
 
 export const actionsRouter = createTRPCRouter({
-    getAll: publicProcedure
+    getAll: authedProcedure
         .output(allActionPayloadSchema)
         .query(async ({ ctx }) => {
             const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
@@ -58,7 +58,7 @@ export const actionsRouter = createTRPCRouter({
             return mappedActions;
         }),
 
-    byId: publicProcedure
+    byId: authedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
             const action = await ctx.db.actions.findUnique({

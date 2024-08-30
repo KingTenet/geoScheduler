@@ -52,8 +52,6 @@ const CreatePlace = () => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-
-                console.log(`Setting user location ${latitude} + ${longitude}`);
                 setUserLocation({ longitude, latitude });
             },
 

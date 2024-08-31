@@ -6,6 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import type { GetAccessTokenResult } from "@auth0/nextjs-auth0";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -27,22 +28,12 @@ import { verify } from "./auth";
  * @see https://trpc.io/docs/server/context
  */
 
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-    const userAuthIdpId = "Felix";
-
-    const user = await db.user.upsert({
-        where: {
-            id: userAuthIdpId,
-        },
-        update: {},
-        create: {
-            id: userAuthIdpId,
-        },
-    });
-
+export const createTRPCContext = (opts: {
+    headers: Headers;
+    auth: { accessToken: string | undefined };
+}) => {
     return {
         db,
-        user,
         ...opts,
     };
 };
@@ -150,10 +141,9 @@ export const publicProcedure = _publicProcedure.use(
 export const authedProcedure = _publicProcedure.use(
     async function isAuthed(opts) {
         const { ctx } = opts;
-
-        const bearerToken = ctx.headers
-            .get("authorization")
-            ?.split("Bearer ")[1];
+        const bearerToken =
+            ctx.auth.accessToken ??
+            ctx.headers.get("authorization")?.split("Bearer ")[1];
 
         try {
             if (bearerToken) {
@@ -162,8 +152,9 @@ export const authedProcedure = _publicProcedure.use(
                 if (jwt.sub) {
                     return opts.next({
                         ctx: {
-                            userAuthIdpId: jwt.sub,
-                            auth: jwt,
+                            user: {
+                                id: jwt.sub,
+                            },
                         },
                     });
                 }
@@ -171,6 +162,7 @@ export const authedProcedure = _publicProcedure.use(
         } catch (err) {
             console.error(err);
         }
+
         throw new TRPCError({ code: "UNAUTHORIZED" });
     },
 );

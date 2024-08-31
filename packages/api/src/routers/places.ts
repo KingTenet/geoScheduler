@@ -43,6 +43,16 @@ export const placesRouter = createTRPCRouter({
     create: publicProcedure
         .input(createPlaceInputSchema)
         .mutation(async ({ ctx, input }) => {
+            await ctx.db.user.upsert({
+                where: {
+                    id: ctx.user.id,
+                },
+                update: {},
+                create: {
+                    id: ctx.user.id,
+                },
+            });
+
             const place = await ctx.db.place.create({
                 data: {
                     ...input,

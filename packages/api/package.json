@@ -21,6 +21,7 @@
   "dependencies": {
     "@GeoScheduler/db": "workspace:*",
     "@GeoScheduler/validators": "workspace:*",
+    "@auth0/nextjs-auth0": "^3.5.0",
     "@trpc/server": "catalog:",
     "dotenv": "^16.4.5",
     "jose": "^5.8.0",

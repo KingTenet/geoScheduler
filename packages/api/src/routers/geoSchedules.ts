@@ -8,7 +8,7 @@ import {
 } from "@GeoScheduler/validators";
 
 import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, authedProcedure as publicProcedure } from "../trpc";
 
 export const geoSchedulesRouter = createTRPCRouter({
     getAll: publicProcedure.query(async ({ ctx }) => {
@@ -68,6 +68,16 @@ export const geoSchedulesRouter = createTRPCRouter({
     create: publicProcedure
         .input(actuallyCreateGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
+            await ctx.db.user.upsert({
+                where: {
+                    id: ctx.user.id,
+                },
+                update: {},
+                create: {
+                    id: ctx.user.id,
+                },
+            });
+
             const place = await ctx.db.place.create({
                 data: {
                     name: "Edinburgh" + `${Math.random()}`.slice(0, 5),

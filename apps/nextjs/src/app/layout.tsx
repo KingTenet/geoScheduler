@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { AppBar, Button, Toolbar, Typography } from "@mui/material";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import Login from "./_components/Login";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -23,31 +25,35 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     content="initial-scale=1, width=device-width"
                 />
             </head>
-            <body>
-                <TRPCReactProvider>
-                    <AppBar position="static">
-                        <Toolbar>
-                            <Typography
-                                variant="h6"
-                                component="div"
-                                sx={{ flexGrow: 1 }}
-                            >
-                                GeoScheduler
-                            </Typography>
-                            <Link href="/" passHref>
-                                <Button color="inherit">Home</Button>
-                            </Link>
-                            <Link href="/places" passHref>
-                                <Button color="inherit">Places</Button>
-                            </Link>
-                            <Link href="/geoSchedule" passHref>
-                                <Button color="inherit">Schedules</Button>
-                            </Link>
-                        </Toolbar>
-                    </AppBar>
-                    <main>{children}</main>
-                </TRPCReactProvider>
-            </body>
+
+            <UserProvider>
+                <body>
+                    <TRPCReactProvider>
+                        <AppBar position="static">
+                            <Toolbar>
+                                <Typography
+                                    variant="h6"
+                                    component="div"
+                                    sx={{ flexGrow: 1 }}
+                                >
+                                    GeoScheduler
+                                </Typography>
+                                <Link href="/" passHref>
+                                    <Button color="inherit">Home</Button>
+                                </Link>
+                                <Link href="/places" passHref>
+                                    <Button color="inherit">Places</Button>
+                                </Link>
+                                <Link href="/geoSchedule" passHref>
+                                    <Button color="inherit">Schedules</Button>
+                                </Link>
+                                <Login />
+                            </Toolbar>
+                        </AppBar>
+                        <main>{children}</main>
+                    </TRPCReactProvider>
+                </body>
+            </UserProvider>
         </html>
     );
 }

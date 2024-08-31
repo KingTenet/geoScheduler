@@ -157,8 +157,6 @@ model GeometryCriterium {
     placeId             String
     geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
     geoScheduleConfigId String
-
-    @@unique([placeId, geometryBlockType])
 }
 
 model Place {

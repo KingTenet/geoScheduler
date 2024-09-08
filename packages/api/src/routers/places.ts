@@ -7,12 +7,14 @@ import {
 } from "@GeoScheduler/validators";
 
 import { transformPlaceFromDB } from "../transformers/place";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { authedProcedure, createTRPCRouter } from "../trpc";
 
 export const placesRouter = createTRPCRouter({
-    getAll: publicProcedure.query(async ({ ctx }) => {
+    getAll: authedProcedure.query(async ({ ctx }) => {
         const places = await ctx.db.place.findMany({
-            where: { userId: ctx.user.id },
+            where: {
+                userId: ctx.user.id,
+            },
         });
 
         return places.map((place) => {
@@ -22,11 +24,14 @@ export const placesRouter = createTRPCRouter({
         });
     }),
 
-    byId: publicProcedure
+    byId: authedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
             const place = await ctx.db.place.findUnique({
-                where: { id: input.id, userId: ctx.user.id },
+                where: {
+                    id: input.id,
+                    userId: ctx.user.id,
+                },
             });
 
             if (!place) {
@@ -40,7 +45,7 @@ export const placesRouter = createTRPCRouter({
             return placePayloadSchema.parse(transformedPlace);
         }),
 
-    create: publicProcedure
+    create: authedProcedure
         .input(createPlaceInputSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db.user.upsert({

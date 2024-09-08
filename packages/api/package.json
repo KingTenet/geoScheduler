@@ -11,6 +11,9 @@
   },
   "license": "MIT",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc --watch",
@@ -32,9 +35,16 @@
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
+    "@prisma/client": "catalog:",
+    "@trpc/client": "catalog:",
+    "@types/jest": "^29.5.12",
     "@types/node": "^22.5.1",
+    "@types/supertest": "^6.0.2",
     "eslint": "catalog:",
+    "jest": "^29.7.0",
     "prettier": "catalog:",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.4",
     "typescript": "catalog:"
   },
   "prettier": "@GeoScheduler/prettier-config"

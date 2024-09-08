@@ -8,11 +8,14 @@ import {
 } from "@GeoScheduler/validators";
 
 import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
-import { createTRPCRouter, authedProcedure as publicProcedure } from "../trpc";
+import { authedProcedure, createTRPCRouter } from "../trpc";
 
 export const geoSchedulesRouter = createTRPCRouter({
-    getAll: publicProcedure.query(async ({ ctx }) => {
+    getAll: authedProcedure.query(async ({ ctx }) => {
         const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
+            where: {
+                userId: ctx.user.id,
+            },
             include: {
                 appsToBlock: {
                     include: {
@@ -31,12 +34,15 @@ export const geoSchedulesRouter = createTRPCRouter({
         return geoSchedules.map(transformGeoScheduleFromDB);
     }),
 
-    byId: publicProcedure
+    byId: authedProcedure
         .input(z.object({ id: z.string() }))
         .output(createGeoSchedulePayloadSchema)
         .query(async ({ ctx, input }) => {
             const geoSchedule = await ctx.db.geoScheduleConfig.findUnique({
-                where: { id: input.id },
+                where: {
+                    id: input.id,
+                    userId: ctx.user.id,
+                },
                 include: {
                     appsToBlock: {
                         include: {
@@ -61,11 +67,16 @@ export const geoSchedulesRouter = createTRPCRouter({
             return transformGeoScheduleFromDB(geoSchedule);
         }),
 
-    delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
-        return ctx.db.geoScheduleConfig.delete({ where: { id: input } });
+    delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
+        return ctx.db.geoScheduleConfig.delete({
+            where: {
+                id: input,
+                userId: ctx.user.id,
+            },
+        });
     }),
 
-    create: publicProcedure
+    create: authedProcedure
         .input(actuallyCreateGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
             await ctx.db.user.upsert({

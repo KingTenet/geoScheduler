@@ -63,3 +63,5 @@ dist
 codebase.md
 
 .tokens
+
+.tokens.json

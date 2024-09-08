@@ -9,11 +9,35 @@ import {
 } from "../transformers/actions";
 import { authedProcedure, createTRPCRouter } from "../trpc";
 
+function upsertManyActions(ctx, newActions) {
+/**
+            geoScheduleConfigId: geoScheduleConfigId,
+            fromDate: dateFrom,
+            toDate: dateTo,
+            deletionDateThreshold: deletionDateThreshold,
+*/
+// geoScheduleConfigId, fromDate
+
+
+    const groupedActions = Map.groupBy(newActions);
+    // await ctx.db.actions.findMany({
+        
+    // })
+
+    // await ctx.db.actions.createMany({
+    //     data: newActions,
+    // });
+}
+
+
 export const actionsRouter = createTRPCRouter({
     getAll: authedProcedure
         .output(allActionPayloadSchema)
         .query(async ({ ctx }) => {
             const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
+                where: {
+                    userId: ctx.user.id,
+                },
                 include: {
                     appsToBlock: {
                         include: {
@@ -34,11 +58,29 @@ export const actionsRouter = createTRPCRouter({
                 createActionsFromGeoScheduleConfig,
             );
 
+
+           /**
+            * {
+                where: {
+                    id: ctx.user.id,
+                },
+                update: {},
+                create: {
+                    id: ctx.user.id,
+                },
+            } */ 
+
+
             await ctx.db.actions.createMany({
                 data: newActions,
             });
 
             const actions = await ctx.db.actions.findMany({
+                where: {
+                    geoScheduleConfig: {
+                        userId: ctx.user.id,
+                    },
+                },
                 include: {
                     geoScheduleConfig: {
                         include: {

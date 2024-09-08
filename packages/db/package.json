@@ -24,10 +24,9 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.14.0"
+    "@prisma/client": "catalog:"
   },
   "devDependencies": {
-    "prisma": "^5.14.0",
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
@@ -35,6 +34,7 @@
     "drizzle-kit": "^0.24.0",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "prisma": "^5.14.0",
     "typescript": "catalog:"
   },
   "prettier": "@GeoScheduler/prettier-config"

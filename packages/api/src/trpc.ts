@@ -114,29 +114,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  */
 const _publicProcedure = t.procedure.use(timingMiddleware);
 
-// TODO remove for prod
-export const publicProcedure = _publicProcedure.use(
-    async function devUsers(opts) {
-        const userAuthIdpId = "Felix";
-
-        const user = await opts.ctx.db.user.upsert({
-            where: {
-                id: userAuthIdpId,
-            },
-            update: {},
-            create: {
-                id: userAuthIdpId,
-            },
-        });
-
-        return opts.next({
-            ctx: {
-                user: user,
-            },
-        });
-    },
-);
-
 // procedure that asserts that the user is logged in
 export const authedProcedure = _publicProcedure.use(
     async function isAuthed(opts) {

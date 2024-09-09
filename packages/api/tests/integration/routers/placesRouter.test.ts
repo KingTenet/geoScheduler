@@ -1,45 +1,24 @@
-import { z } from "zod";
+import { createCaller, createTRPCContext } from "../../../src/index";
 
-import {
-    createPlaceInputSchema,
-    placePayloadSchema,
-} from "@GeoScheduler/validators";
+const RESERVED_TEST_USER_NAME = "RESERVED_TEST_USER_NAME";
 
-import { createTestClient } from "../../utils/testClient";
-import { prisma, setupTestDb, teardownTestDb } from "../../utils/testDb";
+// throw new Error(process.env.DATABASE_URL);
 
-const testClient = createTestClient("http://localhost:3000/api/trpc");
+jest.mock("../../../src/auth", () => ({
+    __esModule: true,
+    ...jest.requireActual("../../../src/auth"),
+    verify: () => ({
+        sub: RESERVED_TEST_USER_NAME,
+    }),
+}));
 
-type PlaceInput = z.infer<typeof createPlaceInputSchema>;
-
-describe("Places Router", () => {
-    beforeAll(async () => {
-        await setupTestDb();
+test("get all actions", async () => {
+    const ctx = await createTRPCContext({
+        auth: {
+            accessToken: "nonsense_access_token",
+        },
+        headers: new Headers(),
     });
-
-    afterAll(async () => {
-        await teardownTestDb();
-    });
-
-    it("should create a place", async () => {
-        /**
-            name: z.string(),
-            latitude: z.number().min(-90).max(90),
-            longitude: z.number().min(-180).max(180),
-            radius: z.number().positive(),
-         */
-
-        const newPlace: PlaceInput = {
-            name: "abc",
-            latitude: 10,
-            longitude: 90,
-            radius: 29,
-        };
-
-        const createdPlace = await testClient.places.create.mutate(newPlace);
-
-        // expect(user).toHaveProperty("id", createdUser.id);
-        // expect(user.name).toBe("Get User Test");
-        // expect(user.email).toBe("get@example.com");
-    });
+    const caller = createCaller(ctx);
+    await caller.actions.getAll();
 });

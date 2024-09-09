@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { $Enums, Prisma } from "@GeoScheduler/db";
+import type { Prisma } from "@GeoScheduler/db";
 import {
     createGeoSchedulePayloadSchema,
     dailySchema,

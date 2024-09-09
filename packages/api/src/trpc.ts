@@ -6,7 +6,6 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import type { GetAccessTokenResult } from "@auth0/nextjs-auth0";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -117,6 +116,7 @@ const _publicProcedure = t.procedure.use(timingMiddleware);
 // procedure that asserts that the user is logged in
 export const authedProcedure = _publicProcedure.use(
     async function isAuthed(opts) {
+        // return opts.next({});
         const { ctx } = opts;
         const bearerToken =
             ctx.auth.accessToken ??

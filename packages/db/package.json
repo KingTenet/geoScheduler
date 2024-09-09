@@ -24,7 +24,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "catalog:"
+    "@prisma/client": "^5.18.0"
   },
   "devDependencies": {
     "@GeoScheduler/eslint-config": "workspace:*",

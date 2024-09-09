@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import type { $Enums, Prisma } from "@GeoScheduler/db";
+import type { DayOfWeek, Prisma } from "@GeoScheduler/db";
 import type { actionPayloadSchema } from "@GeoScheduler/validators";
 
 import type { PrismaGeoSchedule } from "../transformers/geoSchedule";
@@ -35,7 +35,7 @@ function dateAtMidnight(date: Date): Date {
     return new Date(Math.floor(date.getTime() / MILLISECONDS_IN_DAY));
 }
 
-function convertDateToPrismaDay(date: Date): $Enums.DayOfWeek {
+function convertDateToPrismaDay(date: Date): DayOfWeek {
     const days = [
         "Sunday",
         "Monday",
@@ -45,6 +45,7 @@ function convertDateToPrismaDay(date: Date): $Enums.DayOfWeek {
         "Friday",
         "Saturday",
     ] as const;
+
     return days[date.getDay()]!;
 }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import type { PrismaClient } from "@GeoScheduler/db";
 import { allActionPayloadSchema } from "@GeoScheduler/validators";
 
 import type { ActionPayload } from "../transformers/actions";
@@ -9,95 +10,61 @@ import {
 } from "../transformers/actions";
 import { authedProcedure, createTRPCRouter } from "../trpc";
 
-function upsertManyActions(ctx, newActions) {
-/**
-            geoScheduleConfigId: geoScheduleConfigId,
-            fromDate: dateFrom,
-            toDate: dateTo,
-            deletionDateThreshold: deletionDateThreshold,
-*/
-// geoScheduleConfigId, fromDate
-
-
-    const groupedActions = Map.groupBy(newActions);
-    // await ctx.db.actions.findMany({
-        
-    // })
-
-    // await ctx.db.actions.createMany({
-    //     data: newActions,
-    // });
-}
-
-
-export const actionsRouter = createTRPCRouter({
-    getAll: authedProcedure
-        .output(allActionPayloadSchema)
-        .query(async ({ ctx }) => {
-            const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
-                where: {
-                    userId: ctx.user.id,
+async function getAllActions(primsaClient: PrismaClient, userId: string) {
+    const geoSchedules = await primsaClient.geoScheduleConfig.findMany({
+        where: {
+            userId: userId,
+        },
+        include: {
+            appsToBlock: {
+                include: {
+                    apps: true,
                 },
+            },
+            geometryCriteria: {
+                include: {
+                    place: true,
+                },
+            },
+            dailyRecurrence: true,
+            weeklyRecurrence: true,
+        },
+    });
+
+    const newActions = geoSchedules.flatMap(createActionsFromGeoScheduleConfig);
+
+    await primsaClient.actions.createMany({
+        data: newActions,
+    });
+
+    const actions = await primsaClient.actions.findMany({
+        where: {
+            geoScheduleConfig: {
+                userId: userId,
+            },
+        },
+        include: {
+            geoScheduleConfig: {
                 include: {
                     appsToBlock: {
                         include: {
                             apps: true,
                         },
                     },
-                    geometryCriteria: {
-                        include: {
-                            place: true,
-                        },
-                    },
-                    dailyRecurrence: true,
-                    weeklyRecurrence: true,
                 },
-            });
+            },
+        },
+    });
 
-            const newActions = geoSchedules.flatMap(
-                createActionsFromGeoScheduleConfig,
-            );
+    const mappedActions: ActionPayload[] = actions.map(transformActionFromDB);
+    return mappedActions;
+}
 
-
-           /**
-            * {
-                where: {
-                    id: ctx.user.id,
-                },
-                update: {},
-                create: {
-                    id: ctx.user.id,
-                },
-            } */ 
-
-
-            await ctx.db.actions.createMany({
-                data: newActions,
-            });
-
-            const actions = await ctx.db.actions.findMany({
-                where: {
-                    geoScheduleConfig: {
-                        userId: ctx.user.id,
-                    },
-                },
-                include: {
-                    geoScheduleConfig: {
-                        include: {
-                            appsToBlock: {
-                                include: {
-                                    apps: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-
-            const mappedActions: ActionPayload[] = actions.map(
-                transformActionFromDB,
-            );
-            return mappedActions;
+export const actionsRouter = createTRPCRouter({
+    getAll: authedProcedure
+        .output(allActionPayloadSchema)
+        .query(async ({ ctx }) => {
+            return getAllActions(ctx.db, ctx.user.id);
         }),
 
     byId: authedProcedure

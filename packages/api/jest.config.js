@@ -12,6 +12,6 @@ export default {
     ],
 
     preset: "ts-jest/presets/js-with-ts",
-    setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
-    globalTeardown: "<rootDir>/tests/teardown.ts",
+    // setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+    // globalTeardown: "<rootDir>/tests/teardown.ts",
 };

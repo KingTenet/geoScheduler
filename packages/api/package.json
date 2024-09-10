@@ -14,7 +14,7 @@
     "test": "pnpm with-test-env jest",
     "test:watch": "pnpm with-test-env jest --watch",
     "test:coverage": "pnpm with-test-env jest --coverage",
-    "with-test-env": "dotenv -e .env.test --",
+    "with-test-env": "dotenv -e ../db/.env.test --",
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc --watch",

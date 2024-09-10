@@ -11,6 +11,11 @@
   },
   "license": "MIT",
   "scripts": {
+    "with-test-env": "./init-env.sh .env.test.example .env.test && dotenv -e .env.test --",
+    "db:start-test": "pnpm with-test-env ./start-database.sh",
+    "with-dev-env": "./init-env.sh .env.example .env && dotenv -e .env --",
+    "db:start-dev": "pnpm with-dev-env ./start-database.sh",
+    "initdb": "pnpm run db:start-dev && pnpm run db:start-test",
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "prettier --check . --ignore-path ../../.gitignore",

@@ -7,30 +7,20 @@ import {
     createGeoSchedulePayloadSchema,
 } from "@GeoScheduler/validators";
 
+import type { PrismaGeoSchedule } from "../prismaQueries/geoSchedule";
+import { prismaGeoScheduleQuery } from "../prismaQueries/geoSchedule";
 import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
 import { authedProcedure, createTRPCRouter } from "../trpc";
 
 export const geoSchedulesRouter = createTRPCRouter({
     getAll: authedProcedure.query(async ({ ctx }) => {
-        const geoSchedules = await ctx.db.geoScheduleConfig.findMany({
-            where: {
-                userId: ctx.user.id,
-            },
-            include: {
-                appsToBlock: {
-                    include: {
-                        apps: true,
-                    },
+        const geoSchedules: PrismaGeoSchedule[] =
+            await ctx.db.geoScheduleConfig.findMany({
+                where: {
+                    userId: ctx.user.id,
                 },
-                geometryCriteria: {
-                    include: {
-                        place: true,
-                    },
-                },
-                dailyRecurrence: true,
-                weeklyRecurrence: true,
-            },
-        });
+                ...prismaGeoScheduleQuery,
+            });
         return geoSchedules.map(transformGeoScheduleFromDB);
     }),
 
@@ -38,26 +28,14 @@ export const geoSchedulesRouter = createTRPCRouter({
         .input(z.object({ id: z.string() }))
         .output(createGeoSchedulePayloadSchema)
         .query(async ({ ctx, input }) => {
-            const geoSchedule = await ctx.db.geoScheduleConfig.findUnique({
-                where: {
-                    id: input.id,
-                    userId: ctx.user.id,
-                },
-                include: {
-                    appsToBlock: {
-                        include: {
-                            apps: true,
-                        },
+            const geoSchedule: PrismaGeoSchedule | null =
+                await ctx.db.geoScheduleConfig.findUnique({
+                    where: {
+                        id: input.id,
+                        userId: ctx.user.id,
                     },
-                    geometryCriteria: {
-                        include: {
-                            place: true,
-                        },
-                    },
-                    dailyRecurrence: true,
-                    weeklyRecurrence: true,
-                },
-            });
+                    ...prismaGeoScheduleQuery,
+                });
             if (!geoSchedule) {
                 throw new TRPCError({
                     code: "NOT_FOUND",

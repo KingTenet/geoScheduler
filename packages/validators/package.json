@@ -17,7 +17,7 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "test": "ts-jest"
+    "test": "jest"
   },
   "dependencies": {
     "zod": "catalog:"

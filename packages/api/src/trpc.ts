@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 
 import { db } from "@GeoScheduler/db";
 
-import { verify } from "./auth";
+import { verify } from "./utils/auth";
 
 /**
  * 1. CONTEXT

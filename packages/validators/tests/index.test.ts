@@ -2,11 +2,13 @@ import { describe, expect, test } from "@jest/globals";
 import { z } from "zod";
 
 import {
+    actuallyCreateGeoSchedulePayloadSchema,
     createGeoScheduleBasePayloadSchema,
     createGeoSchedulePayloadSchema,
 } from "../src/geoSchedulePayload";
 
 const validBasePayload: z.infer<typeof createGeoScheduleBasePayloadSchema> = {
+    id: "abc",
     blocks: ["Chrome", "Facebook"],
     untilLocation: {
         longitude: 0,
@@ -17,6 +19,11 @@ const validBasePayload: z.infer<typeof createGeoScheduleBasePayloadSchema> = {
         startTime: 60 * 60 * 8,
         endTime: 60 * 60 * 10,
     },
+    // repeatingType:"weekly",
+    // repeatingWeekly: {
+    //     endDay: "Friday",
+    //     startDay: "Saturday",
+    // },
 };
 
 const validWeeklyPayload = {

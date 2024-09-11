@@ -3,7 +3,10 @@ import { z } from "zod";
 import type { PrismaClient } from "@GeoScheduler/db";
 import { allActionPayloadSchema } from "@GeoScheduler/validators";
 
+import type { PrismaAction } from "../prismaQueries/actions";
 import type { ActionPayload } from "../transformers/actions";
+import { prismaActionQuery } from "../prismaQueries/actions";
+import { prismaGeoScheduleQuery } from "../prismaQueries/geoSchedule";
 import {
     createActionsFromGeoScheduleConfig,
     transformActionFromDB,
@@ -15,23 +18,26 @@ async function getAllActions(primsaClient: PrismaClient, userId: string) {
         where: {
             userId: userId,
         },
-        include: {
-            appsToBlock: {
-                include: {
-                    apps: true,
-                },
-            },
-            geometryCriteria: {
-                include: {
-                    place: true,
-                },
-            },
-            dailyRecurrence: true,
-            weeklyRecurrence: true,
-        },
+        ...prismaGeoScheduleQuery,
     });
 
-    const newActions = geoSchedules.flatMap(createActionsFromGeoScheduleConfig);
+    const oldActions: PrismaAction[] = geoSchedules.flatMap(
+        ({ actions }): PrismaAction[] => actions,
+    );
+
+    const allActions = geoSchedules.flatMap((geoSchedule) =>
+        createActionsFromGeoScheduleConfig(geoSchedule),
+    );
+
+    const newActions = allActions.filter(
+        (maybeNewAction) =>
+            !oldActions.find(
+                (oldAction) =>
+                    oldAction.fromDate === maybeNewAction.fromDate &&
+                    oldAction.geoScheduleConfigId ===
+                        maybeNewAction.geoScheduleConfigId,
+            ),
+    );
 
     await primsaClient.actions.createMany({
         data: newActions,
@@ -43,22 +49,23 @@ async function getAllActions(primsaClient: PrismaClient, userId: string) {
                 userId: userId,
             },
         },
-        include: {
-            geoScheduleConfig: {
-                include: {
-                    appsToBlock: {
-                        include: {
-                            apps: true,
-                        },
-                    },
-                },
-            },
-        },
+        ...prismaActionQuery,
     });
 
     const mappedActions: ActionPayload[] = actions.map(transformActionFromDB);
     return mappedActions;
 }
+
+/***
+ * prisma.$transaction([
+  prisma.posts.deleteMany({ where: { userId: 1 } }),
+  prisma.posts.createMany({
+    { id: 1, title: 'first',  userId: 1 },
+    { id: 2, title: 'second', userId: 1 },
+    { id: 3, title: 'third',  userId: 1 },
+  }),
+]);
+ */
 
 export const actionsRouter = createTRPCRouter({
     getAll: authedProcedure
@@ -72,17 +79,7 @@ export const actionsRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const action = await ctx.db.actions.findUnique({
                 where: { id: input.id },
-                include: {
-                    geoScheduleConfig: {
-                        include: {
-                            appsToBlock: {
-                                include: {
-                                    apps: true,
-                                },
-                            },
-                        },
-                    },
-                },
+                ...prismaActionQuery,
             });
             return action;
         }),

@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 # Use this script to start a docker container for a local development database
 
-# TO RUN ON WINDOWS:
-# 1. Install WSL (Windows Subsystem for Linux) - https://learn.microsoft.com/en-us/windows/wsl/install
-# 2. Install Docker Desktop for Windows - https://docs.docker.com/docker-for-windows/install/
-# 3. Open WSL - `wsl`
-# 4. Run this script - `./start-database.sh`
-
-# On Linux and macOS you can run this script directly - `./start-database.sh`
-
 set -a
 
 DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
@@ -45,4 +37,11 @@ docker run \
 
 echo psql \"$DATABASE_URL\"
 
-pnpm prisma migrate dev
+retries=3
+for ((i = 0; i < retries; i++)); do
+    pnpm prisma migrate dev
+    [[ $? -eq 0 ]] && break
+
+    echo "Couldn't initialise DB schema, let's wait 5 seconds and retry"
+    sleep 5
+done

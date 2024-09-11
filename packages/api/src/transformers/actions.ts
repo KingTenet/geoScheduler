@@ -1,25 +1,14 @@
 import type { z } from "zod";
 
-import type { DayOfWeek, Prisma } from "@GeoScheduler/db";
+import type { DayOfWeek } from "@GeoScheduler/db";
 import type { actionPayloadSchema } from "@GeoScheduler/validators";
+import { MS_IN_DAY, MS_IN_WEEK } from "@GeoScheduler/validators";
 
-import type { PrismaGeoSchedule } from "../transformers/geoSchedule";
+import type { PrismaAction } from "../prismaQueries/actions";
+import type { PrismaGeoSchedule } from "../prismaQueries/geoSchedule";
+import { getDateNow } from "../utils/common";
 
 export type ActionPayload = z.infer<typeof actionPayloadSchema>;
-
-export type PrismaAction = Prisma.ActionsGetPayload<{
-    include: {
-        geoScheduleConfig: {
-            include: {
-                appsToBlock: {
-                    include: {
-                        apps: true;
-                    };
-                };
-            };
-        };
-    };
-}>;
 
 function applyTimeSinceMidnightToDate(
     secsSinceMidnight: number,
@@ -28,11 +17,8 @@ function applyTimeSinceMidnightToDate(
     return new Date(dateAtMidnight(date).getTime() + secsSinceMidnight * 1000);
 }
 
-const MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
-const MS_IN_1_WEEK = MILLISECONDS_IN_DAY * 7;
-
 function dateAtMidnight(date: Date): Date {
-    return new Date(Math.floor(date.getTime() / MILLISECONDS_IN_DAY));
+    return new Date(Math.floor(date.getTime() / MS_IN_DAY));
 }
 
 function convertDateToPrismaDay(date: Date): DayOfWeek {
@@ -58,8 +44,16 @@ function shouldBeDeleted(prismaAction: PrismaAction) {
     );
 }
 
+/**
+ * Create actions based on the geo schedule config, between 1 week before
+ * and 2 weeks after the reference date
+ *
+ * @param arr The array of objects to group
+ * @returns An object with keys as the serialized group keys and values as arrays of objects
+ */
 export function createActionsFromGeoScheduleConfig(
     prismaGeoSchedule: PrismaGeoSchedule,
+    referenceDate: Date = getDateNow(),
 ): Pick<
     PrismaAction,
     "fromDate" | "toDate" | "deletionDateThreshold" | "geoScheduleConfigId"
@@ -68,9 +62,9 @@ export function createActionsFromGeoScheduleConfig(
     const toSecondsAfterMidnight = prismaGeoSchedule.toTime;
     const geoScheduleConfigId = prismaGeoSchedule.id;
 
-    const now = Date.now();
-    const lastWeek = new Date(now - MS_IN_1_WEEK);
-    const twoWeeks = new Date(now + MS_IN_1_WEEK * 2);
+    const now = referenceDate.getTime();
+    const lastWeek = new Date(now - MS_IN_WEEK);
+    const twoWeeks = new Date(now + MS_IN_WEEK * 2);
 
     if (prismaGeoSchedule.dailyRecurrence) {
         const recurrence = prismaGeoSchedule.dailyRecurrence;
@@ -88,22 +82,23 @@ export function createActionsFromGeoScheduleConfig(
                     fromSecondsAfterMidnight,
                     workingDate,
                 );
-                let dateTo = applyTimeSinceMidnightToDate(
+                const dateTo = applyTimeSinceMidnightToDate(
                     toSecondsAfterMidnight,
                     workingDate,
                 );
-                dateTo =
-                    dateTo > dateFrom
-                        ? dateTo
-                        : new Date(dateTo.getTime() + MILLISECONDS_IN_DAY);
+                const dateToUnixTime: number = dateTo.getTime();
+                const dateToTomorrow = dateToUnixTime + MS_IN_DAY;
+
+                const dateToToUse =
+                    dateTo > dateFrom ? dateTo : new Date(dateToTomorrow);
 
                 const deletionDateThreshold = new Date(
                     dateFrom.getTime() + delay * 1000,
                 );
 
-                actions.push([dateFrom, dateTo, deletionDateThreshold]);
+                actions.push([dateFrom, dateToToUse, deletionDateThreshold]);
             }
-            workingDate = new Date(workingDate.getTime() + MILLISECONDS_IN_DAY);
+            workingDate = new Date(workingDate.getTime() + MS_IN_DAY);
         }
 
         return actions.map(([dateFrom, dateTo, deletionDateThreshold]) => ({

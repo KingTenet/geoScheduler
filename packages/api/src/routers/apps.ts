@@ -1,9 +1,6 @@
-import { z } from "zod";
-
-import type { Prisma } from "@GeoScheduler/db";
 import { appsPayload } from "@GeoScheduler/validators";
 
-import { createTRPCRouter, authedProcedure } from "../trpc";
+import { authedProcedure, createTRPCRouter } from "../trpc";
 
 export const appsRouter = createTRPCRouter({
     create: authedProcedure

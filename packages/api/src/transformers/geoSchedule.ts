@@ -1,12 +1,21 @@
 import type { z } from "zod";
 
-import type { Prisma } from "@GeoScheduler/db";
-import {
-    createGeoSchedulePayloadSchema,
+import type {
     dailySchema,
     untilGeometryCriteriaSchema,
     weeklySchema,
 } from "@GeoScheduler/validators";
+import { createGeoSchedulePayloadSchema } from "@GeoScheduler/validators";
+
+import type {
+    PrismaApp,
+    PrismaAppsToBlock,
+    PrismaDailyRecurrence,
+    PrismaGeometryCriteria,
+    PrismaGeoSchedule,
+    PrismaWeeklyRecurrence,
+} from "../prismaQueries/geoSchedule";
+import type { PrismaPlace } from "../prismaQueries/place";
 
 class NotSupportedError extends Error {}
 
@@ -20,43 +29,6 @@ function transformAppsFromDB(app: PrismaApp): PrismaApp {
     };
 }
 
-export type PrismaPlace = Prisma.PlaceGetPayload<undefined>;
-
-export type PrismaGeoSchedule = Prisma.GeoScheduleConfigGetPayload<{
-    include: {
-        appsToBlock: {
-            include: {
-                apps: true;
-            };
-        };
-        geometryCriteria: {
-            include: {
-                place: true;
-            };
-        };
-        dailyRecurrence: true;
-        weeklyRecurrence: true;
-    };
-}>;
-
-export type PrismaApp = Prisma.AppGetPayload<undefined>;
-
-export type PrismaAppsToBlock = Prisma.AppsToBlockGetPayload<{
-    include: {
-        apps: true;
-    };
-}>;
-
-export type PrismaGeometryCriteria = Prisma.GeometryCriteriumGetPayload<{
-    include: {
-        place: true;
-    };
-}>;
-
-export type PrismaDailyRecurrence = Prisma.DailyRecurrenceGetPayload<undefined>;
-export type PrismaWeeklyRecurrence =
-    Prisma.WeeklyRecurrenceGetPayload<undefined>;
-
 function transformAppsToBlockFromDB(
     appsToBlock: PrismaAppsToBlock | null,
 ): PrismaAppsToBlock {
@@ -64,11 +36,10 @@ function transformAppsToBlockFromDB(
         throw new NotSupportedError();
     }
 
-    const { id, actionsId, geoScheduleConfigId, apps } = appsToBlock;
+    const { id, geoScheduleConfigId, apps } = appsToBlock;
 
     return {
         id,
-        actionsId,
         geoScheduleConfigId,
         apps: apps.map(transformAppsFromDB),
     };

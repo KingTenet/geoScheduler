@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+    MAX_LOCATION_RADIUS_METRES,
+    MIN_LOCATION_RADIUS_METRES,
+    SECONDS_IN_DAY,
+} from "./constants";
+
 const daysOfWeekSchema = z.enum([
     "Monday",
     "Tuesday",
@@ -10,9 +16,6 @@ const daysOfWeekSchema = z.enum([
     "Sunday",
 ]);
 
-const MIN_LOCATION_RADIUS_METRES = 30;
-const MAX_LOCATION_RADIUS_METRES = 1000 * 10000; // 10,000km
-
 const placeSchema = z.object({
     latitude: z.number().gte(-90).lte(90),
     longitude: z.number().gte(-180).lte(180),
@@ -22,12 +25,9 @@ const placeSchema = z.object({
         .lte(MAX_LOCATION_RADIUS_METRES),
 });
 
-const MINUTES_IN_ONE_DAY = 60 * 24;
-const SECONDS_IN_ONE_DAY = 60 * MINUTES_IN_ONE_DAY;
-
 const timeRangeSchema = z.object({
-    startTime: z.number().gte(0).lte(SECONDS_IN_ONE_DAY),
-    endTime: z.number().gte(0).lte(SECONDS_IN_ONE_DAY),
+    startTime: z.number().gte(0).lte(SECONDS_IN_DAY),
+    endTime: z.number().gte(0).lte(SECONDS_IN_DAY),
 });
 
 const repeatingDailySchema = z.array(daysOfWeekSchema).min(1);

@@ -10,15 +10,15 @@ import { getDateNow } from "../utils/common";
 
 export type ActionPayload = z.infer<typeof actionPayloadSchema>;
 
-function applyTimeSinceMidnightToDate(
+export function applyTimeSinceMidnightToDate(
     secsSinceMidnight: number,
     date: Date,
 ): Date {
     return new Date(dateAtMidnight(date).getTime() + secsSinceMidnight * 1000);
 }
 
-function dateAtMidnight(date: Date): Date {
-    return new Date(Math.floor(date.getTime() / MS_IN_DAY));
+export function dateAtMidnight(date: Date): Date {
+    return new Date(Math.floor(date.getTime() / MS_IN_DAY) * MS_IN_DAY);
 }
 
 function convertDateToPrismaDay(date: Date): DayOfWeek {

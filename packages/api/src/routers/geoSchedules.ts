@@ -113,11 +113,9 @@ export const geoSchedulesRouter = createTRPCRouter({
                         create: {
                             apps: {
                                 createMany: {
-                                    data: [
-                                        {
-                                            appName: "facebook",
-                                        },
-                                    ],
+                                    data: input.blocks.map((appName) => ({
+                                        appName,
+                                    })),
                                 },
                             },
                         },

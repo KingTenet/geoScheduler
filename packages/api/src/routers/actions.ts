@@ -33,7 +33,8 @@ async function getAllActions(primsaClient: PrismaClient, userId: string) {
         (maybeNewAction) =>
             !oldActions.find(
                 (oldAction) =>
-                    oldAction.fromDate === maybeNewAction.fromDate &&
+                    oldAction.fromDate.getTime() ===
+                        maybeNewAction.fromDate.getTime() &&
                     oldAction.geoScheduleConfigId ===
                         maybeNewAction.geoScheduleConfigId,
             ),

@@ -39,7 +39,7 @@ echo psql \"$DATABASE_URL\"
 
 retries=3
 for ((i = 0; i < retries; i++)); do
-    pnpm prisma migrate dev
+    pnpm prisma migrate dev -n init
     [[ $? -eq 0 ]] && break
 
     echo "Couldn't initialise DB schema, let's wait 5 seconds and retry"

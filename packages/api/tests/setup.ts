@@ -1,19 +1,23 @@
-import { PrismaClient } from "@prisma/client";
-
-// import { mockDeep } from 'jest-mock-extended';
-
-const prisma = new PrismaClient();
+import {db as prisma} from "@GeoScheduler/db";
 
 beforeAll(async () => {
-    // Set up test database
-    await prisma.$connect();
+    const tablenames = await prisma.$queryRaw<
+        { tablename: string }[]
+    >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+
+    const tables = tablenames
+        .map(({ tablename }) => tablename)
+        .filter((name) => name !== "_prisma_migrations")
+        .map((name) => `"public"."${name}"`)
+        .join(", ");
+
+    try {
+        await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
+    } catch (error) {
+        console.log({ error });
+    }
 });
 
 afterAll(async () => {
-    // Disconnect from test database
     await prisma.$disconnect();
 });
-
-// jest.mock('@GeoScheduler/db', () => ({
-//   db: mockDeep<PrismaClient>(),
-// }));

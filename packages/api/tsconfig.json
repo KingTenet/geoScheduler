@@ -1,6 +1,7 @@
 {
   "extends": "@GeoScheduler/tsconfig/internal-package.json",
-  "include": ["src", "../validators/index.spec.ts"],
+  "include": ["src", "../validators/index.spec.ts", "tests/**/*"],
+  //   "include": ["src", "../validators/index.spec.ts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "lib": ["ES2022", "dom", "dom.iterable"],

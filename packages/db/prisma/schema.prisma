@@ -56,7 +56,7 @@ model GeoScheduleConfig {
 
 model Actions {
     id                    String                 @id @default(uuid())
-    geoScheduleConfig     GeoScheduleConfig      @relation(fields: [geoScheduleConfigId], references: [id])
+    geoScheduleConfig     GeoScheduleConfig      @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
     geoScheduleConfigId   String
     deletionDateThreshold DateTime
     deletionStatus        ActionDeletionStatus?
@@ -136,7 +136,7 @@ enum DayOfWeek {
 model GeometryCriterium {
     id                  String            @id @default(uuid())
     geometryBlockType   GeometryBlockType
-    place               Place             @relation(fields: [placeId], references: [id])
+    place               Place             @relation(fields: [placeId], references: [id], onDelete: Cascade)
     placeId             String
     geoScheduleConfig   GeoScheduleConfig @relation(fields: [geoScheduleConfigId], references: [id], onDelete: Cascade)
     geoScheduleConfigId String
@@ -145,8 +145,8 @@ model GeometryCriterium {
 model Place {
     id               String              @id @default(uuid())
     name             String
-    userId           String
     user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId           String
     latitude         Float
     longitude        Float
     radius           Float

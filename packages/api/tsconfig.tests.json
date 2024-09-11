@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "files": ["tests/**/*"],
+  "include": ["tests/**/*"],
   "env": {
     "jest": true
   },

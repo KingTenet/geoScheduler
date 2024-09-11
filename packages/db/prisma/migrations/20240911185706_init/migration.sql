@@ -17,27 +17,6 @@ CREATE TYPE "DayOfWeek" AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', '
 CREATE TYPE "GeometryBlockType" AS ENUM ('WHEN_INSIDE', 'WHEN_OUTSIDE', 'UNTIL_ENTERING', 'UNTIL_LEAVING');
 
 -- CreateTable
-CREATE TABLE "Post" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Post2" (
-    "id" SERIAL NOT NULL,
-    "content" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Post2_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
 
@@ -152,9 +131,6 @@ CREATE TABLE "Place" (
 
     CONSTRAINT "Place_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE INDEX "Post_name_idx" ON "Post"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AppsToBlock_geoScheduleConfigId_key" ON "AppsToBlock"("geoScheduleConfigId");

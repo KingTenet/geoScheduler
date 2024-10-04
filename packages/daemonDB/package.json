@@ -1,12 +1,12 @@
 {
-  "name": "@GeoScheduler/db",
+  "name": "@GeoScheduler/daemonDB",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
     ".": {
-      "types": "./index.ts",
-      "default": "./index.ts"
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     }
   },
   "license": "MIT",
@@ -33,6 +33,7 @@
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
     "dotenv-cli": "^7.4.2",
     "drizzle-kit": "^0.24.0",
     "eslint": "catalog:",

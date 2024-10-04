@@ -1,14 +1,13 @@
+import type { PartialKeys } from "./geoSchedule";
 import { PrismaAction } from "../../src/prismaQueries/actions";
 import { PrismaGeoSchedule } from "../../src/prismaQueries/geoSchedule";
 import { getDateNow } from "../../src/utils/common";
-import type {PartialKeys} from "./geoSchedule";
 
 const DEFAULT_ACTION: Omit<
     PrismaAction,
     "geoScheduleConfigId" | "geoScheduleConfig" | "id"
 > = {
     deletionDateThreshold: getDateNow(),
-    deletionStatus: null,
     executionStatus: null,
     fromDate: getDateNow(),
     toDate: getDateNow(),

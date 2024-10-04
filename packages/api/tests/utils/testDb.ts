@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+import { db as prisma } from "@GeoScheduler/db";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 export const setupTestDb = async () => {
     // Set up your test database here

@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import type { Prisma } from "@GeoScheduler/db";
+import { Prisma } from "@GeoScheduler/db";
 import {
     actuallyCreateGeoSchedulePayloadSchema,
     createGeoSchedulePayloadSchema,
@@ -11,6 +11,80 @@ import type { PrismaGeoSchedule } from "../prismaQueries/geoSchedule";
 import { prismaGeoScheduleQuery } from "../prismaQueries/geoSchedule";
 import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
 import { authedProcedure, createTRPCRouter } from "../trpc";
+
+
+async function create(db, ) {
+
+    const place = await ctx.db.place.create({
+        data: {
+            name: "Edinburgh" + `${Math.random()}`.slice(0, 5),
+            userId: ctx.user.id,
+            latitude: input.untilLocation.latitude,
+            longitude: input.untilLocation.longitude,
+            radius: input.untilLocation.radius,
+        },
+    });
+
+    function getWeeklyRecurrence():
+        | Prisma.WeeklyRecurrenceUncheckedCreateNestedOneWithoutGeoScheduleConfigInput
+        | undefined {
+        if (input.repeatingType === "weekly") {
+            return {
+                create: {
+                    fromDay: input.repeatingWeekly.startDay,
+                    toDay: input.repeatingWeekly.endDay,
+                },
+            };
+        }
+    }
+
+    function getDailyRecurrence():
+        | Prisma.DailyRecurrenceUncheckedCreateNestedOneWithoutGeoScheduleConfigInput
+        | Prisma.DailyRecurrenceCreateNestedOneWithoutGeoScheduleConfigInput
+        | undefined {
+        if (input.repeatingType === "daily") {
+            return {
+                create: {
+                    repeatDays: input.repeatingDaily,
+                },
+            };
+        }
+    }
+
+    await ctx.db.geoScheduleConfig.create({
+        data: {
+            userId: ctx.user.id,
+            paused: false,
+            fromTime: input.repeatingTime.startTime,
+            toTime: input.repeatingTime.endTime,
+            appsToBlock: {
+                create: {
+                    apps: {
+                        createMany: {
+                            data: input.blocks.map((appName) => ({
+                                appName,
+                            })),
+                        },
+                    },
+                },
+            },
+            geometryCriteria: {
+                createMany: {
+                    data: [
+                        {
+                            geometryBlockType: "UNTIL_LEAVING",
+                            placeId: place.id,
+                        },
+                    ],
+                },
+            },
+            updateDelayType: "TIMED_DELAY",
+            updateDelaySeconds: 3600,
+            dailyRecurrence: getDailyRecurrence(),
+            weeklyRecurrence: getWeeklyRecurrence() ?? Prisma.skip,
+        },
+    });
+}
 
 export const geoSchedulesRouter = createTRPCRouter({
     getAll: authedProcedure.query(async ({ ctx }) => {
@@ -45,98 +119,37 @@ export const geoSchedulesRouter = createTRPCRouter({
             return transformGeoScheduleFromDB(geoSchedule);
         }),
 
-    delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
-        return ctx.db.geoScheduleConfig.delete({
-            where: {
-                id: input,
-                userId: ctx.user.id,
-            },
-        });
-    }),
+        update: authedProcedure
+        .input(actuallyCreateGeoSchedulePayloadSchema)
+        .mutation(({ ctx, input }) => {
+            return ctx.db.geoScheduleConfig.update({
+                data: {
+                    deleteStartedDate: new Date(),
+                    deletionStatus: "WAITING_FOR_CLIENT",
+                },
+                where: {
+                    id: input,
+                    userId: ctx.user.id,
+                },
+            });
+        }),
+
+        delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
+            return ctx.db.geoScheduleConfig.update({
+                data: {
+                    deleteStartedDate: new Date(),
+                    deletionStatus: "WAITING_FOR_CLIENT",
+                },
+                where: {
+                    id: input,
+                    userId: ctx.user.id,
+                },
+            });
+        }),
 
     create: authedProcedure
         .input(actuallyCreateGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.user.upsert({
-                where: {
-                    id: ctx.user.id,
-                },
-                update: {},
-                create: {
-                    id: ctx.user.id,
-                },
-            });
-
-            const place = await ctx.db.place.create({
-                data: {
-                    name: "Edinburgh" + `${Math.random()}`.slice(0, 5),
-                    userId: ctx.user.id,
-                    latitude: input.untilLocation.latitude,
-                    longitude: input.untilLocation.longitude,
-                    radius: input.untilLocation.radius,
-                },
-            });
-
-            function getWeeklyRecurrence():
-                | Prisma.WeeklyRecurrenceUncheckedCreateNestedOneWithoutGeoScheduleConfigInput
-                | undefined {
-                if (input.repeatingType === "weekly") {
-                    return {
-                        create: {
-                            fromDay: input.repeatingWeekly.startDay,
-                            toDay: input.repeatingWeekly.endDay,
-                        },
-                    };
-                }
-            }
-
-            function getDailyRecurrence():
-                | Prisma.DailyRecurrenceUncheckedCreateNestedOneWithoutGeoScheduleConfigInput
-                | Prisma.DailyRecurrenceCreateNestedOneWithoutGeoScheduleConfigInput
-                | undefined {
-                if (input.repeatingType === "daily") {
-                    return {
-                        create: {
-                            repeatDays: input.repeatingDaily,
-                        },
-                    };
-                }
-            }
-
-            await ctx.db.geoScheduleConfig.create({
-                data: {
-                    userId: ctx.user.id,
-                    paused: false,
-                    fromTime: input.repeatingTime.startTime,
-                    toTime: input.repeatingTime.endTime,
-                    appsToBlock: {
-                        create: {
-                            apps: {
-                                createMany: {
-                                    data: input.blocks.map((appName) => ({
-                                        appName,
-                                    })),
-                                },
-                            },
-                        },
-                    },
-                    geometryCriteria: {
-                        createMany: {
-                            data: [
-                                {
-                                    geometryBlockType: "UNTIL_LEAVING",
-                                    placeId: place.id,
-                                },
-                            ],
-                        },
-                    },
-                    updateDelayType: "TIMED_DELAY",
-                    updateDelaySeconds: 3600,
-                    deleteStartedDate: new Date(),
-                    deletionStatus: "WAITING_FOR_CLIENT",
-                    dailyRecurrence: getDailyRecurrence(),
-                    weeklyRecurrence: getWeeklyRecurrence(),
-                },
-            });
+            
         }),
 });

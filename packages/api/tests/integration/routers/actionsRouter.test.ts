@@ -7,7 +7,6 @@ import {
 } from "@GeoScheduler/validators";
 
 import { createCaller, createTRPCContext } from "../../../src/index";
-import { getUserMock } from "../../mocks/user";
 
 const RESERVED_TEST_USER_NAME = "RESERVED_TEST_USER_NAME";
 jest.mock("../../../src/utils/auth", () => ({
@@ -25,24 +24,6 @@ jest.mock("../../../src/utils/common", () => ({
         return new Date("2020-06-09T00:00:00.000Z"); // Tue Jun 09 2020 00:00:00 GMT+0000;
     },
 }));
-
-const weeklyPayload: z.infer<typeof actuallyCreateGeoSchedulePayloadSchema> = {
-    blocks: ["Chrome", "Facebook"],
-    untilLocation: {
-        longitude: 0,
-        latitude: 52,
-        radius: 100,
-    },
-    repeatingTime: {
-        startTime: 60 * 60 * 8,
-        endTime: 60 * 60 * 10,
-    },
-    repeatingType: "weekly",
-    repeatingWeekly: {
-        endDay: "Friday",
-        startDay: "Saturday",
-    },
-};
 
 const dailyPayload: z.infer<typeof actuallyCreateGeoSchedulePayloadSchema> = {
     blocks: ["Chrome", "Facebook"],
@@ -79,6 +60,7 @@ describe("places router", () => {
 
     test("get all actions again", async () => {
         await caller.geoSchedules.create(dailyPayload);
+        const actual1 = await caller.actions.getAll();
         const actual = await caller.actions.getAll();
 
         const actualResult = actual.map(({ id: _unused, ...rest }) => ({
@@ -116,7 +98,7 @@ describe("places router", () => {
             appNames: ["Chrome", "Facebook"],
             deletionStatus: undefined,
             executionStatus: undefined,
-            shouldBeDeleted: false,
+            shouldBeExecuted: true,
             fromDate: new Date(action.fromDate),
             toDate: new Date(action.toDate),
         }));

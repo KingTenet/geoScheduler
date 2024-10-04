@@ -1,9 +1,15 @@
 import ApiClient from "./api/ApiClient";
 import { OAuth } from "./auth/tokens";
 import initEnv from "./initEnv";
+import Scheduler from "./Scheduler";
+import { ScheduleState } from "./ScheduleState";
+import getPromiseUserStoppedProcess from "./signalHandler";
+import { PrismaDaemonAction } from "./types/actions";
+
 
 async function main() {
-    console.log("Started");
+    console.log("Starting...");
+    const promiseUserStopped = getPromiseUserStoppedProcess();
     const env = initEnv();
     const auth = await OAuth.create(
         env.AUTH0_DOMAIN,
@@ -12,17 +18,22 @@ async function main() {
         env.TOKENS_FILE_PATH,
     );
 
-    /**
-     * Scheduler
-     * Periodically actions will be requested from the database
-     * These actions need to be added to the local database
-     * They then
-     */
-
     try {
         const apiClient = new ApiClient(env.API_BASE_URL, auth);
-        const actions = await apiClient.getActions();
-        console.log(actions);
+
+        const blah = new ScheduleHandler(apiClient);
+        blah.start();
+
+
+        promiseUserStopped
+            .then(() => {
+                console.log("Stopping services");
+                scheduleState.stop();
+                console.log("Stopped all services");
+            })
+            .catch(() => {
+                console.error("Failed to stop services");
+            });
     } catch (error) {
         console.error("Error:", error);
     }

@@ -1,6 +1,8 @@
 import { TRPCClientError } from "@trpc/client";
 
 import type { OAuth } from "../auth/tokens";
+import type { DaemonActionShouldBeExecuted } from "../types/actions";
+import { transformActionToDaemonAction } from "../transformers/actions";
 import { getTRPCClient } from "../trpcClient";
 
 export default class ApiClient {
@@ -12,39 +14,16 @@ export default class ApiClient {
         this.trpcClient = getTRPCClient(apiBaseUrl, auth);
     }
 
-    // private async getHeaders() {
-    //     return {
-    //         Authorization: `Bearer ${await this.auth.getAccessToken()}`,
-    //     };
-    // }
-
-    async getGeoSchedules() {
-        try {
-            const geoSchedules =
-                await this.trpcClient.geoSchedules.getAll.query();
-
-            return geoSchedules;
-            // return await this.trpcClient.geoSchedules.getAll.query();
-        } catch (err) {
-            if (err instanceof TRPCClientError) {
-                console.log(err);
-                console.log("It is a TRPC Error!!!");
-            }
-            console.error("Failed to fetch geo schedules:", err);
-            throw err;
-        }
-    }
-
-    async getActions() {
+    async getActions(): Promise<DaemonActionShouldBeExecuted[]> {
         try {
             const actions = await this.trpcClient.actions.getAll.query();
-
-            return actions;
-            // return await this.trpcClient.geoSchedules.getAll.query();
+            return actions.map((action) => [
+                transformActionToDaemonAction(action),
+                action.shouldBeExecuted,
+            ]);
         } catch (err) {
             if (err instanceof TRPCClientError) {
                 console.log(err);
-                console.log("It is a TRPC Error!!!");
             }
             console.error("Failed to fetch actions:", err);
             throw err;

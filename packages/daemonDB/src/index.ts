@@ -1,5 +1,5 @@
-import type { DayOfWeek } from "@prisma/client";
-import { Prisma, PrismaClient } from "@prisma/client";
+import type { DaemonAction } from "./generated/client";
+import { Prisma, PrismaClient } from "./generated/client";
 
 const globalForPrisma = globalThis as unknown as { db?: PrismaClient };
 
@@ -12,10 +12,6 @@ export const db =
 if (process.env.NODE_ENV !== "production") {
     globalForPrisma.db = db;
 }
-interface $Enums {
-    DayOfTheWeek: DayOfWeek;
-}
 
+export type { DaemonAction };
 export { Prisma, PrismaClient };
-
-export type { $Enums, DayOfWeek };

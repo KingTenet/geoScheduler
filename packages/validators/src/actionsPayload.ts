@@ -1,11 +1,18 @@
 import { z } from "zod";
 
+const executionStatus = z.enum([
+    "WONT_START",
+    "STARTED",
+    "WONT_FINISH",
+    "FINISHED",
+    "FAILED",
+]);
+
 const actionPayloadSchema = z.object({
     id: z.string(),
     appNames: z.array(z.string()),
-    deletionStatus: z.string().optional(),
-    executionStatus: z.string().optional(),
-    shouldBeDeleted: z.boolean().optional(),
+    executionStatus: executionStatus.optional(),
+    shouldBeExecuted: z.boolean(),
     fromDate: z.date(),
     toDate: z.date(),
 });

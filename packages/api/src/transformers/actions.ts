@@ -35,12 +35,12 @@ function convertDateToPrismaDay(date: Date): DayOfWeek {
     return days[date.getDay()]!;
 }
 
-function shouldBeDeleted(prismaAction: PrismaAction) {
+function shouldBeExecuted(prismaAction: PrismaAction): boolean {
     const deletionStartedAt = prismaAction.geoScheduleConfig.deleteStartedDate;
 
     return Boolean(
-        deletionStartedAt &&
-            deletionStartedAt < prismaAction.deletionDateThreshold,
+        !deletionStartedAt ||
+            deletionStartedAt > prismaAction.deletionDateThreshold,
     );
 }
 
@@ -124,9 +124,8 @@ export function transformActionFromDB(
             prismaAction.geoScheduleConfig.appsToBlock?.apps.map(
                 (app) => app.appName,
             ) ?? [],
-        deletionStatus: prismaAction.deletionStatus ?? undefined,
         executionStatus: prismaAction.executionStatus ?? undefined,
-        shouldBeDeleted: shouldBeDeleted(prismaAction),
+        shouldBeExecuted: shouldBeExecuted(prismaAction),
         fromDate,
         toDate,
     };

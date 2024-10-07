@@ -1,7 +1,7 @@
 import type { ChildProcess } from "child_process";
 import type { Job } from "node-schedule";
 
-import { PrismaDaemonAction } from "./types/actions";
+import type { PrismaDaemonAction } from "./types/actions";
 
 // import { PrismaDaemonAction } from "./types/actions";
 
@@ -32,4 +32,6 @@ export interface ScheduledTask {
     startJob: Job;
     endJob: Job;
     process?: ChildProcess;
+    abort?: () => Promise<void>;
+    exit?: Promise<void>;
 }

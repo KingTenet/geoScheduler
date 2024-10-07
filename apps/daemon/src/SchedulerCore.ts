@@ -2,6 +2,7 @@ import type { ActionSynchronizer } from "./ActionSynchronizer";
 import type { ConfigurationManager } from "./ConfigurationManager";
 import type { Logger } from "./Logger";
 import type { TaskScheduler } from "./TaskScheduler";
+import { sleep } from "./common";
 
 export class SchedulerCore {
     private isRunning = false;
@@ -17,7 +18,7 @@ export class SchedulerCore {
         this.isRunning = true;
         while (this.isRunning) {
             await this.syncAndSchedule();
-            await this.sleep(this.config.getSyncInterval());
+            await sleep(this.config.getSyncInterval());
         }
     }
 
@@ -40,9 +41,5 @@ export class SchedulerCore {
         } catch (error) {
             this.logger.error("Failed to sync and schedule actions", error);
         }
-    }
-
-    private sleep(ms: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

@@ -25,7 +25,7 @@ async function main() {
 
     const actionSynchronizer = new ActionSynchronizer(db, apiClient, logger);
     const taskExecutor = new TaskExecutor(config, logger);
-    const taskScheduler = new TaskScheduler(taskExecutor, db, logger);
+    const taskScheduler = new TaskScheduler(config, taskExecutor, db, logger);
 
     const schedulerCore = new SchedulerCore(
         actionSynchronizer,

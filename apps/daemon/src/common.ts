@@ -40,6 +40,39 @@ export function getNewThings<T, X extends string>(
         .map(([_key, thing]) => thing);
 }
 
-export async function promiseTimeout(timeout: number) {
-    return new Promise((resolve) => setTimeout(resolve, timeout));
+export async function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function execWithTimeout<X>(
+    promiseThing: Promise<X>,
+    maxWaitTime: number,
+): Promise<{
+    data: X | undefined;
+    timedOut: boolean;
+}> {
+    const symbol = Symbol();
+    const maybeThing = await Promise.any([
+        sleep(maxWaitTime).then(() => symbol),
+        promiseThing,
+    ]);
+    const thing = maybeThing !== symbol ? maybeThing : undefined;
+    if (thing) {
+        return {
+            data: thing as X,
+            timedOut: false,
+        };
+    }
+    return { data: -1, timedOut: true };
+}
+
+export async function execOrThrowOnTimeout<X>(
+    promiseThing: Promise<X>,
+    maxWaitTime: number,
+): Promise<X> {
+    const {data} = await execWithTimeout<X>(promiseThing, maxWaitTime);
+    if (!data) {
+        throw new Error("Timed out waiting for promise");
+    }
+    return data;
 }

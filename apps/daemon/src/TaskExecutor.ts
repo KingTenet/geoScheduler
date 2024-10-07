@@ -1,50 +1,94 @@
-import { spawn } from "child_process";
+import { execFile } from "node:child_process";
 import type { ChildProcess } from "child_process";
 
 import type { ConfigurationManager } from "./ConfigurationManager";
-import type { Action, ActionExecutionConfig } from "./interfaces";
+import type { ActionExecutionConfig } from "./interfaces";
 import type { Logger } from "./Logger";
 import type { PrismaDaemonAction } from "./types/actions";
 
+function promiseOnce(fn: () => Promise<void>) {
+    let promiseResult: undefined | Promise<void>;
+    return (): Promise<void> => {
+        if (!promiseResult) {
+            promiseResult = fn();
+        }
+        return promiseResult;
+    };
+}
 export class TaskExecutor {
     constructor(
         private config: ConfigurationManager,
         private logger: Logger,
     ) {}
 
-    // TODO - figure out if this should be returning a promise
-    async executeTask(action: PrismaDaemonAction): Promise<ChildProcess> {
+    async executeTask(action: PrismaDaemonAction): Promise<{
+        process: ChildProcess;
+        abort: () => Promise<void>;
+        exit: Promise<void>;
+    }> {
         const executionConfig = this.getExecutionConfig(action);
+        const abortController = new AbortController();
 
         return new Promise((resolve, reject) => {
-            const process = spawn(executionConfig.script, executionConfig.args);
+            const process = execFile(
+                executionConfig.script,
+                executionConfig.args,
+                {
+                    signal: abortController.signal,
+                },
+                (error, stdout, stderr) => {
+                    if (stdout) {
+                        this.logger.info(`Task ${action.id} output: ${stdout}`);
+                    }
+                    if (stderr) {
+                        this.logger.error(`Task ${action.id} error: ${stderr}`);
+                    }
+                    if (error && error.name !== "AbortError") {
+                        this.logger.error(
+                            `Task ${action.id} failed: ${error.message}`,
+                        );
+                        reject(new Error(`Task ${action.id} failed`));
+                    }
+                },
+            );
 
-            process.stdout.on("data", (data) => {
-                this.logger.info(`Task ${action.id} output: ${data}`);
+            const promiseExit = new Promise<void>((resolveExit, rejectExit) => {
+                process.on("exit", (code) => {
+                    if (code === 0) {
+                        this.logger.info(
+                            `Task ${action.id} completed successfully`,
+                        );
+                        resolveExit();
+                    } else {
+                        this.logger.error(
+                            `Task ${action.id} exited with code ${code}`,
+                        );
+                        rejectExit(
+                            new Error(
+                                `Task ${action.id} exited with code ${code}`,
+                            ),
+                        );
+                    }
+                });
             });
 
-            process.stderr.on("data", (data) => {
-                this.logger.error(`Task ${action.id} error: ${data}`);
-            });
+            const promiseAbort = async () => {
+                return new Promise<void>((resolveAbort) => {
+                    abortController.abort();
+                    process.on("error", (error) => {
+                        if (error.name === "AbortError") {
+                            this.logger.info(`Task ${action.id} aborted`);
+                            resolveAbort();
+                        }
+                    });
+                });
+            };
 
-            process.on("error", (error) => {
-                this.logger.error(`Failed to start task ${action.id}`, error);
-                reject(error);
+            resolve({
+                process,
+                abort: promiseOnce(promiseAbort),
+                exit: promiseExit,
             });
-
-            process.on("exit", (code) => {
-                if (code !== 0) {
-                    this.logger.error(
-                        `Task ${action.id} exited with code ${code}`,
-                    );
-                } else {
-                    this.logger.info(
-                        `Task ${action.id} completed successfully`,
-                    );
-                }
-            });
-
-            resolve(process);
         });
     }
 
@@ -59,14 +103,17 @@ export class TaskExecutor {
             script: actionTypeConfig.script ?? defaultConfig.script,
             args: [
                 ...(actionTypeConfig.args ?? []),
-                // ...this.buildActionArgs(action),
+                ...this.buildActionArgs(action),
             ],
         };
     }
 
-    // private buildActionArgs(action: PrismaDaemonAction): string[] {
-    //     return Object.entries(action.config).map(
-    //         ([key, value]) => `--${key}=${value}`,
-    //     );
-    // }
+    private buildActionArgs(action: PrismaDaemonAction): string[] {
+        return [
+            `--id=${action.id}`,
+            `--apps=${action.appNames.join(",")}`,
+            `--from=${action.fromDate.toISOString()}`,
+            `--to=${action.toDate.toISOString()}`,
+        ];
+    }
 }

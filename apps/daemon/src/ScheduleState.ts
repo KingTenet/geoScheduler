@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import { abort } from "node:process";
 import type { Job } from "node-schedule";
 import type { ChildProcess } from "node:child_process";
 import schedule from "node-schedule";

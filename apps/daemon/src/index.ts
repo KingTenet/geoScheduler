@@ -1,11 +1,8 @@
 import ApiClient from "./api/ApiClient";
 import { OAuth } from "./auth/tokens";
 import initEnv from "./initEnv";
-import Scheduler from "./Scheduler";
-import { ScheduleState } from "./ScheduleState";
+import { ScheduleHandler } from "./ScheduleState";
 import getPromiseUserStoppedProcess from "./signalHandler";
-import { PrismaDaemonAction } from "./types/actions";
-
 
 async function main() {
     console.log("Starting...");
@@ -21,14 +18,16 @@ async function main() {
     try {
         const apiClient = new ApiClient(env.API_BASE_URL, auth);
 
-        const blah = new ScheduleHandler(apiClient);
-        blah.start();
-
+        const scheduler = new ScheduleHandler(apiClient);
+        scheduler
+            .start()
+            .then(() => console.log("Scheduler started"))
+            .catch((err) => console.error(err));
 
         promiseUserStopped
             .then(() => {
                 console.log("Stopping services");
-                scheduleState.stop();
+                scheduler.stop();
                 console.log("Stopped all services");
             })
             .catch(() => {

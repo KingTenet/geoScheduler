@@ -1,41 +1,40 @@
-import ApiClient from "./api/ApiClient";
+// index.ts
+import { ActionSynchronizer } from "./ActionSynchronizer";
+import { ApiClient } from "./ApiClient";
 import { OAuth } from "./auth/tokens";
-import initEnv from "./initEnv";
-import { ScheduleHandler } from "./ScheduleState";
-import getPromiseUserStoppedProcess from "./signalHandler";
+import { ConfigurationManager } from "./ConfigurationManager";
+import { DatabaseService } from "./DatabaseService";
+import { Logger } from "./Logger";
+import { SchedulerCore } from "./SchedulerCore";
+import { TaskExecutor } from "./TaskExecutor";
+import { TaskScheduler } from "./TaskScheduler";
 
 async function main() {
-    console.log("Starting...");
-    const promiseUserStopped = getPromiseUserStoppedProcess();
-    const env = initEnv();
+    const config = new ConfigurationManager();
+    const logger = new Logger(config);
+    const db = new DatabaseService(logger);
+
     const auth = await OAuth.create(
-        env.AUTH0_DOMAIN,
-        env.AUTH0_AUDIENCE,
-        env.AUTH0_CLIENT_ID,
-        env.TOKENS_FILE_PATH,
+        config.getAuthDomain(),
+        config.getAuthAudience(),
+        config.getAuthClientId(),
+        config.getTokensFilePath(),
     );
 
-    try {
-        const apiClient = new ApiClient(env.API_BASE_URL, auth);
+    const apiClient = new ApiClient(config, auth, logger);
 
-        const scheduler = new ScheduleHandler(apiClient);
-        scheduler
-            .start()
-            .then(() => console.log("Scheduler started"))
-            .catch((err) => console.error(err));
+    const actionSynchronizer = new ActionSynchronizer(db, apiClient, logger);
+    const taskExecutor = new TaskExecutor(config, logger);
+    const taskScheduler = new TaskScheduler(taskExecutor, db, logger);
 
-        promiseUserStopped
-            .then(() => {
-                console.log("Stopping services");
-                scheduler.stop();
-                console.log("Stopped all services");
-            })
-            .catch(() => {
-                console.error("Failed to stop services");
-            });
-    } catch (error) {
-        console.error("Error:", error);
-    }
+    const schedulerCore = new SchedulerCore(
+        actionSynchronizer,
+        taskScheduler,
+        config,
+        logger,
+    );
+
+    await schedulerCore.start();
 }
 
 main().catch(console.error);

@@ -1,26 +1,12 @@
-// /** @type {import('ts-jest').JestConfigWithTsJest} **/
-// export default {
-//     testEnvironment: "node",
-//     transform: {
-//         "\\.[jt]sx?$": [
-//             "ts-jest",
-//             { tsconfig: "<rootDir>/tsconfig.tests.json" },
-//         ],
-//     },
-//     transformIgnorePatterns: [
-//         "node_modules/.pnpm/superjson@2.2.1/node_modules/(?!superjson/.*)",
-//     ],
-
-//     preset: "ts-jest/presets/js-with-ts",
-//     // setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
-//     // globalTeardown: "<rootDir>/tests/teardown.ts",
-// };
-
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 export default {
     // preset: "ts-jest",
     testEnvironment: "node",
-    roots: ["<rootDir>/src", "<rootDir>/tests"],
+    roots: [
+        "<rootDir>/src",
+        "<rootDir>/tests",
+        // "node_modules/@GeoScheduler/api/src/",
+    ],
     testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
     // setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
     // globalTeardown: "<rootDir>/tests/teardown.ts",
@@ -29,7 +15,12 @@ export default {
     transform: {
         "\\.[jt]sx?$": [
             "ts-jest",
-            { tsconfig: "<rootDir>/tsconfig.tests.json" },
+
+            {
+                tsconfig: "<rootDir>/tsconfig.tests.json",
+                // https://github.com/kulshekhar/ts-jest/issues/1343
+                isolatedModules: true,
+            },
         ],
     },
     // moduleNameMapper: {
@@ -41,7 +32,5 @@ export default {
     preset: "ts-jest/presets/js-with-ts",
     transformIgnorePatterns: [
         "node_modules/.pnpm/superjson@2.2.1/node_modules/(?!superjson/.*)",
-        // "node_modules/(?!@GeoScheduler/api/.*)",
-        "node_modules/@GeoScheduler/api",
     ],
 };

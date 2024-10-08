@@ -4,7 +4,7 @@ import { DatabaseService } from "../../src/DatabaseService";
 import { SchedulerCore } from "../../src/SchedulerCore";
 import { TaskExecutor } from "../../src/TaskExecutor";
 import { TaskScheduler } from "../../src/TaskScheduler";
-import { mockApiClient } from "../mocks/apiClient";
+// import { mockApiClient } from "../mocks/apiClient";
 import { mockDatabase } from "../mocks/database";
 
 jest.mock("../../src/ActionSynchronizer");
@@ -62,7 +62,7 @@ describe("SchedulerCore", () => {
             cancelledActions: mockCancelledActions,
         } as any);
 
-        await schedulerCore.start();
+        schedulerCore.start();
         await new Promise((resolve) => setTimeout(resolve, 1100)); // Wait for one sync cycle
         schedulerCore.stop();
 

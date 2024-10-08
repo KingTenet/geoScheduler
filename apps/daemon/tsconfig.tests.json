@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["tests/**/*"],
+  "include": ["tests/**/*", "node_modules/@GeoScheduler/api/src/**/*"],
   "env": {
     "jest": true
   },
@@ -9,5 +9,7 @@
     // "outDir": "${configDir}/tests",
     "noErrorTruncation": true,
     "checkJs": false
+    // "preserveSymlinks": true,
+    // "isolatedModules": true
   }
 }

@@ -6,7 +6,7 @@ import type { AppRouter } from "@GeoScheduler/api";
 import type { OAuth } from "./auth/tokens";
 import type { ConfigurationManager } from "./ConfigurationManager";
 import type { Logger } from "./Logger";
-import type { DaemonAction } from "./types/interfaces";
+import type { ApiAction, DaemonAction } from "./types/interfaces";
 import { transformActionToDaemonAction } from "./transformers/actions";
 
 export class ApiClient {
@@ -39,7 +39,7 @@ export class ApiClient {
             const actions = await this.trpcClient.actions.getAll.query();
             this.logger.info(`Fetched ${actions.length} actions from API`);
 
-            return actions.map((action) => [
+            return actions.map((action: ApiAction) => [
                 transformActionToDaemonAction(action),
                 action.shouldBeExecuted,
             ]);

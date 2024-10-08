@@ -1,7 +1,6 @@
-// ConfigurationManager.ts
 import dotenv from "dotenv";
 
-import type { ActionExecutionConfig } from "./interfaces";
+import type { ActionExecutionConfig } from "./types/interfaces";
 
 dotenv.config();
 

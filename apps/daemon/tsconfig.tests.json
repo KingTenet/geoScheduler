@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["tests/**/*"],
+  "env": {
+    "jest": true
+  },
+  "compilerOptions": {
+    // "emitDeclarationOnly": false,
+    // "outDir": "${configDir}/tests",
+    "noErrorTruncation": true,
+    "checkJs": false
+  }
+}

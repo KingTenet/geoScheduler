@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsx watch src/index.ts",
@@ -34,6 +37,8 @@
     "@GeoScheduler/eslint-config": "workspace:*",
     "@GeoScheduler/prettier-config": "workspace:*",
     "@GeoScheduler/tsconfig": "workspace:*",
+    "@jest/globals": "catalog:",
+    "@types/jest": "catalog:",
     "@types/node": "catalog:",
     "@types/node-schedule": "file:local-types/node-schedule",
     "@types/prompts": "^2.4.9",
@@ -41,7 +46,9 @@
     "@types/react-dom": "catalog:react18",
     "dotenv-cli": "^7.4.2",
     "eslint": "catalog:",
+    "jest": "catalog:",
     "prettier": "catalog:",
+    "ts-jest": "catalog:",
     "tsx": "^4.19.0",
     "typescript": "catalog:"
   },

@@ -1,7 +1,7 @@
 import type { ApiClient } from "./ApiClient";
 import type { DatabaseService } from "./DatabaseService";
 import type { Logger } from "./Logger";
-import type { PrismaDaemonAction } from "./types/actions";
+import type { DaemonAction } from "./types/interfaces";
 import { getNewThings } from "./common";
 
 export class ActionSynchronizer {
@@ -12,8 +12,8 @@ export class ActionSynchronizer {
     ) {}
 
     async synchronizeActions(): Promise<{
-        newActions: PrismaDaemonAction[];
-        cancelledActions: PrismaDaemonAction[];
+        newActions: DaemonAction[];
+        cancelledActions: DaemonAction[];
     }> {
         try {
             const apiActions = await this.apiClient.getActions();
@@ -33,9 +33,9 @@ export class ActionSynchronizer {
     }
 
     private identifyNewActions(
-        dbActions: PrismaDaemonAction[],
-        apiActions: [PrismaDaemonAction, boolean][],
-    ): PrismaDaemonAction[] {
+        dbActions: DaemonAction[],
+        apiActions: [DaemonAction, boolean][],
+    ): DaemonAction[] {
         return getNewThings(
             dbActions,
             apiActions.map(([action]) => action),
@@ -44,8 +44,8 @@ export class ActionSynchronizer {
     }
 
     private identifyCancelledActions(
-        apiActions: [PrismaDaemonAction, boolean][],
-    ): Promise<PrismaDaemonAction[]> {
+        apiActions: [DaemonAction, boolean][],
+    ): Promise<DaemonAction[]> {
         const shouldBeExecutedIds = apiActions
             .filter(([_action, shouldBeExecuted]) => shouldBeExecuted)
             .map(([{ id }]) => id);

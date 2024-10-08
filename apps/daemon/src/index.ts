@@ -1,4 +1,3 @@
-// index.ts
 import { ActionSynchronizer } from "./ActionSynchronizer";
 import { ApiClient } from "./ApiClient";
 import { OAuth } from "./auth/tokens";

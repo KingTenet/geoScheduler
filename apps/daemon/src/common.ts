@@ -44,34 +44,47 @@ export async function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function execWithTimeout<X>(
-    promiseThing: Promise<X>,
+export async function execWithTimeout<Thing>(
+    promiseThing: Promise<Thing>,
     maxWaitTime: number,
-): Promise<{
-    data: X | undefined;
-    timedOut: boolean;
-}> {
-    const symbol = Symbol();
-    const maybeThing = await Promise.any([
-        sleep(maxWaitTime).then(() => symbol),
+): Promise<
+    | {
+          data: Thing;
+          timedOut: false;
+      }
+    | {
+          timedOut: true;
+          data: undefined;
+      }
+> {
+    const timedOutSymbol = Symbol();
+    const thingOrTimedOut = await Promise.any([
+        sleep(maxWaitTime).then(() => timedOutSymbol),
         promiseThing,
     ]);
-    const thing = maybeThing !== symbol ? maybeThing : undefined;
-    if (thing) {
+
+    if (timedOutSymbol === thingOrTimedOut) {
         return {
-            data: thing as X,
-            timedOut: false,
+            timedOut: true,
+            data: undefined,
         };
     }
-    return { data: -1, timedOut: true };
+
+    return {
+        data: thingOrTimedOut as Thing,
+        timedOut: false,
+    };
 }
 
 export async function execOrThrowOnTimeout<X>(
     promiseThing: Promise<X>,
     maxWaitTime: number,
 ): Promise<X> {
-    const { data } = await execWithTimeout<X>(promiseThing, maxWaitTime);
-    if (!data) {
+    const { timedOut, data } = await execWithTimeout<X>(
+        promiseThing,
+        maxWaitTime,
+    );
+    if (timedOut) {
         throw new Error("Timed out waiting for promise");
     }
     return data;

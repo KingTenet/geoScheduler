@@ -6,7 +6,7 @@ import type { AppRouter } from "@GeoScheduler/api";
 import type { OAuth } from "./auth/tokens";
 import type { ConfigurationManager } from "./ConfigurationManager";
 import type { Logger } from "./Logger";
-import type { DaemonAction } from "./types/actions";
+import type { DaemonAction } from "./types/interfaces";
 import { transformActionToDaemonAction } from "./transformers/actions";
 
 export class ApiClient {

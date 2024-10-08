@@ -1,4 +1,4 @@
-import type { ApiAction, DaemonAction} from "../types/actions";
+import type { ApiAction, DaemonAction } from "../types/interfaces";
 
 export function transformActionToDaemonAction(action: ApiAction): DaemonAction {
     const { id, appNames, fromDate, toDate, executionStatus } = action;

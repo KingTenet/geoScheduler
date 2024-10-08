@@ -1,5 +1,3 @@
-// DatabaseService.ts
-
 import type { DaemonAction } from "@GeoScheduler/daemonDB";
 import { db } from "@GeoScheduler/daemonDB";
 

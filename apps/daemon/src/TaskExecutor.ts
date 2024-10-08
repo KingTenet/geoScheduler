@@ -2,9 +2,8 @@ import { execFile } from "node:child_process";
 import type { ChildProcess } from "child_process";
 
 import type { ConfigurationManager } from "./ConfigurationManager";
-import type { ActionExecutionConfig } from "./interfaces";
 import type { Logger } from "./Logger";
-import type { PrismaDaemonAction } from "./types/actions";
+import type { ActionExecutionConfig, DaemonAction } from "./types/interfaces";
 import { promiseOnce } from "./common";
 
 export class TaskExecutor {
@@ -13,7 +12,7 @@ export class TaskExecutor {
         private logger: Logger,
     ) {}
 
-    async executeTask(action: PrismaDaemonAction): Promise<{
+    async executeTask(action: DaemonAction): Promise<{
         process: ChildProcess;
         abort: () => Promise<void>;
         exit: Promise<void>;
@@ -84,9 +83,7 @@ export class TaskExecutor {
         });
     }
 
-    private getExecutionConfig(
-        action: PrismaDaemonAction,
-    ): ActionExecutionConfig {
+    private getExecutionConfig(action: DaemonAction): ActionExecutionConfig {
         const defaultConfig = this.config.getDefaultExecutionConfig();
         const actionTypeConfig =
             this.config.getActionTypeConfig("BLOCK_WEBSITE");
@@ -100,7 +97,7 @@ export class TaskExecutor {
         };
     }
 
-    private buildActionArgs(action: PrismaDaemonAction): string[] {
+    private buildActionArgs(action: DaemonAction): string[] {
         return [
             `--id=${action.id}`,
             `--apps=${action.appNames.join(",")}`,

@@ -1,4 +1,3 @@
-// Logger.ts
 import winston from "winston";
 
 import type { ConfigurationManager } from "./ConfigurationManager";

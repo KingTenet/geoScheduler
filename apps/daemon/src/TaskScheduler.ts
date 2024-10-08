@@ -4,10 +4,9 @@ import { MS_IN_SECOND, SECONDS_IN_MINUTE } from "@GeoScheduler/validators";
 
 import type { ConfigurationManager } from "./ConfigurationManager";
 import type { DatabaseService } from "./DatabaseService";
-import type { ScheduledTask } from "./interfaces";
 import type { Logger } from "./Logger";
 import type { TaskExecutor } from "./TaskExecutor";
-import type { PrismaDaemonAction } from "./types/actions";
+import type { DaemonAction, ScheduledTask } from "./types/interfaces";
 import { getDateNow } from "../../../packages/api/src/utils/common";
 import { execOrThrowOnTimeout } from "./common";
 
@@ -23,7 +22,7 @@ export class TaskScheduler {
         private logger: Logger,
     ) {}
 
-    scheduleTask(action: PrismaDaemonAction): void {
+    scheduleTask(action: DaemonAction): void {
         const startJob = scheduleJob(action.fromDate, () =>
             this.startTask(action),
         );
@@ -32,7 +31,7 @@ export class TaskScheduler {
         this.scheduledTasks.set(action.id, { action, startJob, endJob });
     }
 
-    private async startTask(action: PrismaDaemonAction): Promise<void> {
+    private async startTask(action: DaemonAction): Promise<void> {
         try {
             const task = this.scheduledTasks.get(action.id);
             if (!task) return;
@@ -79,7 +78,7 @@ export class TaskScheduler {
         }
     }
 
-    private async endTask(action: PrismaDaemonAction): Promise<void> {
+    private async endTask(action: DaemonAction): Promise<void> {
         const task = this.scheduledTasks.get(action.id);
         if (!task) {
             return;

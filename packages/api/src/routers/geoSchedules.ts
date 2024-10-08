@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import type { PrismaClient } from "@GeoScheduler/db";
 import { Prisma } from "@GeoScheduler/db";
 import {
     actuallyCreateGeoSchedulePayloadSchema,
@@ -12,13 +13,15 @@ import { prismaGeoScheduleQuery } from "../prismaQueries/geoSchedule";
 import { transformGeoScheduleFromDB } from "../transformers/geoSchedule";
 import { authedProcedure, createTRPCRouter } from "../trpc";
 
-
-async function create(db, ) {
-
-    const place = await ctx.db.place.create({
+async function create(
+    db: PrismaClient,
+    userId: string,
+    input: z.infer<typeof actuallyCreateGeoSchedulePayloadSchema>,
+) {
+    const place = await db.place.create({
         data: {
             name: "Edinburgh" + `${Math.random()}`.slice(0, 5),
-            userId: ctx.user.id,
+            userId: userId,
             latitude: input.untilLocation.latitude,
             longitude: input.untilLocation.longitude,
             radius: input.untilLocation.radius,
@@ -51,9 +54,9 @@ async function create(db, ) {
         }
     }
 
-    await ctx.db.geoScheduleConfig.create({
+    await db.geoScheduleConfig.create({
         data: {
-            userId: ctx.user.id,
+            userId: userId,
             paused: false,
             fromTime: input.repeatingTime.startTime,
             toTime: input.repeatingTime.endTime,
@@ -119,37 +122,37 @@ export const geoSchedulesRouter = createTRPCRouter({
             return transformGeoScheduleFromDB(geoSchedule);
         }),
 
-        update: authedProcedure
-        .input(actuallyCreateGeoSchedulePayloadSchema)
-        .mutation(({ ctx, input }) => {
-            return ctx.db.geoScheduleConfig.update({
-                data: {
-                    deleteStartedDate: new Date(),
-                    deletionStatus: "WAITING_FOR_CLIENT",
-                },
-                where: {
-                    id: input,
-                    userId: ctx.user.id,
-                },
-            });
-        }),
+    // update: authedProcedure
+    //     .input(actuallyCreateGeoSchedulePayloadSchema)
+    //     .mutation(({ ctx, input }) => {
+    //         return ctx.db.geoScheduleConfig.update({
+    //             data: {
+    //                 deleteStartedDate: new Date(),
+    //                 deletionStatus: "WAITING_FOR_CLIENT",
+    //             },
+    //             where: {
+    //                 id: input,
+    //                 userId: ctx.user.id,
+    //             },
+    //         });
+    //     }),
 
-        delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
-            return ctx.db.geoScheduleConfig.update({
-                data: {
-                    deleteStartedDate: new Date(),
-                    deletionStatus: "WAITING_FOR_CLIENT",
-                },
-                where: {
-                    id: input,
-                    userId: ctx.user.id,
-                },
-            });
-        }),
+    delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
+        return ctx.db.geoScheduleConfig.update({
+            data: {
+                deleteStartedDate: new Date(),
+                deletionStatus: "WAITING_FOR_CLIENT",
+            },
+            where: {
+                id: input,
+                userId: ctx.user.id,
+            },
+        });
+    }),
 
     create: authedProcedure
         .input(actuallyCreateGeoSchedulePayloadSchema)
         .mutation(async ({ ctx, input }) => {
-            
+            return create(ctx.db, ctx.user.id, input);
         }),
 });

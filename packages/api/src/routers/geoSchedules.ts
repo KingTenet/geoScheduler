@@ -5,6 +5,7 @@ import type { PrismaClient } from "@GeoScheduler/db";
 import { Prisma } from "@GeoScheduler/db";
 import {
     actuallyCreateGeoSchedulePayloadSchema,
+    actuallyUpdateGeoSchedulePayloadSchema,
     createGeoSchedulePayloadSchema,
 } from "@GeoScheduler/validators";
 
@@ -18,6 +19,16 @@ async function create(
     userId: string,
     input: z.infer<typeof actuallyCreateGeoSchedulePayloadSchema>,
 ) {
+    await db.user.upsert({
+        create: {
+            id: userId,
+        },
+        update: {},
+        where: {
+            id: userId,
+        },
+    });
+
     const place = await db.place.create({
         data: {
             name: "Edinburgh" + `${Math.random()}`.slice(0, 5),
@@ -122,20 +133,22 @@ export const geoSchedulesRouter = createTRPCRouter({
             return transformGeoScheduleFromDB(geoSchedule);
         }),
 
-    // update: authedProcedure
-    //     .input(actuallyCreateGeoSchedulePayloadSchema)
-    //     .mutation(({ ctx, input }) => {
-    //         return ctx.db.geoScheduleConfig.update({
-    //             data: {
-    //                 deleteStartedDate: new Date(),
-    //                 deletionStatus: "WAITING_FOR_CLIENT",
-    //             },
-    //             where: {
-    //                 id: input,
-    //                 userId: ctx.user.id,
-    //             },
-    //         });
-    //     }),
+    update: authedProcedure
+        .input(actuallyUpdateGeoSchedulePayloadSchema)
+        .mutation(async ({ ctx, input }) => {
+            const { id, ...strippedInput } = input;
+            await ctx.db.geoScheduleConfig.update({
+                data: {
+                    deleteStartedDate: new Date(),
+                    deletionStatus: "WAITING_FOR_CLIENT",
+                },
+                where: {
+                    id,
+                    userId: ctx.user.id,
+                },
+            });
+            return create(ctx.db, ctx.user.id, strippedInput);
+        }),
 
     delete: authedProcedure.input(z.string()).mutation(({ ctx, input }) => {
         return ctx.db.geoScheduleConfig.update({

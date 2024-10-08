@@ -78,6 +78,14 @@ const actuallyCreateGeoSchedulePayloadSchema = z.discriminatedUnion(
     ],
 );
 
+const actuallyUpdateGeoSchedulePayloadSchema = z.discriminatedUnion(
+    "repeatingType",
+    [
+        createWithWeeklySchema.required().strict(),
+        createWithDailySchema.required().strict(),
+    ],
+);
+
 const createPartialGeoSchedulePayloadSchema = z.union([
     createWithWeeklySchema.partial().strict(),
     createWithDailySchema.partial().strict(),
@@ -87,6 +95,7 @@ const byIdGeoSchedulePayloadSchema = z.object({ id: z.string() }).strict();
 
 export {
     actuallyCreateGeoSchedulePayloadSchema,
+    actuallyUpdateGeoSchedulePayloadSchema,
     createGeoSchedulePayloadSchema,
     createWithDailySchema,
     createWithWeeklySchema,

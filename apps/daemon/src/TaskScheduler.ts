@@ -12,7 +12,7 @@ import { getDateNow } from "../../../packages/api/src/utils/common";
 import { execOrThrowOnTimeout } from "./common";
 
 const RETRY_STOP_PROCESS_INTERVAL_MS = MS_IN_SECOND * SECONDS_IN_MINUTE;
-const ABORT_PROCESS_TIMEOUT_MS = 10 * MS_IN_SECOND;
+const ABORT_PROCESS_TIMEOUT_MS = MS_IN_SECOND * SECONDS_IN_MINUTE;
 export class TaskScheduler {
     private scheduledTasks = new Map<string, ScheduledTask>();
 
@@ -66,12 +66,7 @@ export class TaskScheduler {
                 await this.db.wontStart(task.action);
                 task.endJob.cancel();
             } else if (task.endJob.nextInvocation()) {
-                if (task.process?.exitCode === null && task.abort) {
-                    await execOrThrowOnTimeout(
-                        task.abort(),
-                        ABORT_PROCESS_TIMEOUT_MS,
-                    );
-                }
+                await this.attemptAbortProcess(task);
                 await this.db.wontFinish(task.action);
                 task.endJob.cancel();
             }
@@ -91,9 +86,7 @@ export class TaskScheduler {
         }
 
         try {
-            if (task.process?.exitCode === null && task.abort) {
-                await execOrThrowOnTimeout(task.abort(), 10 * MS_IN_SECOND);
-            }
+            await this.attemptAbortProcess(task);
             await this.db.finishAction(task.action);
             this.scheduledTasks.delete(action.id);
         } catch (error) {
@@ -101,12 +94,20 @@ export class TaskScheduler {
                 `Failed to end task for action ${action.id}`,
                 error,
             );
+            this.logger.info(`Rescheduling end task for action ${action.id}`);
             task.endJob = scheduleJob(
-                new Date(
-                    getDateNow().getTime() + RETRY_STOP_PROCESS_INTERVAL_MS,
-                ),
+                getDateNow(RETRY_STOP_PROCESS_INTERVAL_MS),
                 () => this.endTask(action),
             );
+        }
+    }
+
+    private async attemptAbortProcess(
+        task: ScheduledTask,
+        timeout: number = ABORT_PROCESS_TIMEOUT_MS,
+    ) {
+        if (task.process?.exitCode === null && task.abort) {
+            await execOrThrowOnTimeout(task.abort(), timeout);
         }
     }
 }

@@ -29,8 +29,8 @@ export function groupBy<T, K>(
  * Exists solely to enable mocking of functions that use current date.
  * @returns A date object representing now
  */
-export function getDateNow(): Date {
-    return new Date();
+export function getDateNow(offset = 0, now: Date = new Date()): Date {
+    return new Date(now.getTime() + offset);
 }
 
 function getUniqueSet<T, X extends string>(
@@ -92,7 +92,6 @@ function camelCaseToPascalCase(str: string): string {
     copy[0] = str[0].toUpperCase();
     return copy.join("");
 }
-
 
 export function keysToObject<K extends string, V>(
     keys: K[],

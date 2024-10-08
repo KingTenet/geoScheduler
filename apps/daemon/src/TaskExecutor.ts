@@ -5,16 +5,8 @@ import type { ConfigurationManager } from "./ConfigurationManager";
 import type { ActionExecutionConfig } from "./interfaces";
 import type { Logger } from "./Logger";
 import type { PrismaDaemonAction } from "./types/actions";
+import { promiseOnce } from "./common";
 
-function promiseOnce(fn: () => Promise<void>) {
-    let promiseResult: undefined | Promise<void>;
-    return (): Promise<void> => {
-        if (!promiseResult) {
-            promiseResult = fn();
-        }
-        return promiseResult;
-    };
-}
 export class TaskExecutor {
     constructor(
         private config: ConfigurationManager,

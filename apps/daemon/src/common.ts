@@ -70,9 +70,19 @@ export async function execOrThrowOnTimeout<X>(
     promiseThing: Promise<X>,
     maxWaitTime: number,
 ): Promise<X> {
-    const {data} = await execWithTimeout<X>(promiseThing, maxWaitTime);
+    const { data } = await execWithTimeout<X>(promiseThing, maxWaitTime);
     if (!data) {
         throw new Error("Timed out waiting for promise");
     }
     return data;
+}
+
+export function promiseOnce(fn: () => Promise<void>) {
+    let promiseResult: undefined | Promise<void>;
+    return (): Promise<void> => {
+        if (!promiseResult) {
+            promiseResult = fn();
+        }
+        return promiseResult;
+    };
 }

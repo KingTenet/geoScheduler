@@ -9,7 +9,5 @@
     // "outDir": "${configDir}/tests",
     "noErrorTruncation": true,
     "checkJs": false
-    // "preserveSymlinks": true,
-    // "isolatedModules": true
   }
 }

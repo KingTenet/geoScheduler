@@ -13,7 +13,7 @@ import { execOrThrowOnTimeout } from "./common";
 const RETRY_STOP_PROCESS_INTERVAL_MS = MS_IN_SECOND * SECONDS_IN_MINUTE;
 const ABORT_PROCESS_TIMEOUT_MS = MS_IN_SECOND * SECONDS_IN_MINUTE;
 export class TaskScheduler {
-    private scheduledTasks = new Map<string, ScheduledTask>();
+    scheduledTasks = new Map<string, ScheduledTask>();
 
     constructor(
         private config: ConfigurationManager,
@@ -35,10 +35,11 @@ export class TaskScheduler {
         try {
             const task = this.scheduledTasks.get(action.id);
             if (!task) return;
-
             await this.db.startAction(action);
+
             const { process, abort, exit } =
                 await this.taskExecutor.executeTask(action);
+
             this.scheduledTasks.set(action.id, {
                 ...task,
                 process,

@@ -4,8 +4,9 @@ import { DatabaseService } from "../../src/DatabaseService";
 import { SchedulerCore } from "../../src/SchedulerCore";
 import { TaskExecutor } from "../../src/TaskExecutor";
 import { TaskScheduler } from "../../src/TaskScheduler";
+
 // import { mockApiClient } from "../mocks/apiClient";
-import { mockDatabase } from "../mocks/database";
+// import { mockDatabase } from "../mocks/database";
 
 jest.mock("../../src/ActionSynchronizer");
 jest.mock("../../src/ApiClient");
@@ -33,6 +34,7 @@ describe("SchedulerCore", () => {
         mockApiClient,
         mockLogger as any,
     ) as jest.Mocked<ActionSynchronizer>;
+
     const mockTaskExecutor = new TaskExecutor(
         mockConfig as any,
         mockLogger as any,
